@@ -451,7 +451,7 @@
 
       //// // console.log( this.mouse.x, this.mouse.y );
       thumbLeft = thumbRight = false;
-      
+
       if ( !this.mouse.down ) {
 
 				// console.log( "!this.mouse.down, this.mouse.mode", this.mouse.mode );
@@ -465,16 +465,14 @@
           //iv.xl += this.element.offset().left;
           //iv.xr += this.element.offset().left;
 
-          iv.xl += bounds.left + this.element[0].parentNode.scrollLeft;
-          iv.xr += bounds.left + this.element[0].parentNode.scrollLeft;
-
-
+          //iv.xl += bounds.left + this.element[0].parentNode.scrollLeft;
+          //iv.xr += bounds.left + this.element[0].parentNode.scrollLeft;
 
 					this.range = range( Math.floor(iv.xl) , Math.floor(iv.xr) );
 
-					//// // console.log( this.range );
+          var mouseX = this.mouse.x - bounds.left;
           
-          if ( iv.xl <= this.mouse.x && iv.xr >= this.mouse.x ) {
+          if ( iv.xl <= mouseX && iv.xr >= mouseX ) {
           //if ( this.range.indexOf( this.mouse.x ) != -1 ) {
 
 						//// // console.log( "iv.xl <= this.mouse.x && iv.xr >= this.mouse.x", this.mouse.x, iv.xl , iv.xr );
@@ -487,12 +485,12 @@
 
             this.mouse.hovering.grabX = this.mouse.x - this.mouse.hovering.xl + 1;
             
-            if ( this.mouse.x >= iv.xl && this.mouse.x <= iv.xl + 8 ) {
+            if ( mouseX >= iv.xl && mouseX <= iv.xl + 8 ) {
 
               document.body.style.cursor="w-resize";
               thumbLeft = true;
               
-            } else if ( this.mouse.x >= iv.xr-8 && this.mouse.x <= iv.xr ) {
+            } else if ( mouseX >= iv.xr-8 && mouseX <= iv.xr ) {
 
               document.body.style.cursor="e-resize";
               thumbRight = true;
@@ -505,12 +503,12 @@
             
           } else {
 
-          	// console.log( "wtf" );
             if ( iv.hovered ) {
               iv.hovered = false;
               this.mouse.hovering = null;
               this._draw();
             }
+
           }
         }
         if ( !this.mouse.hovering ) {
@@ -533,14 +531,16 @@
       if ( this.mouse.down ) {
 
 	      //this.mouse.x -= bounds.left;
-              
+
         if ( this.mouse.mode === auto && this.mouse.hovering ) {
-          if ( this.mouse.x >= iv.xl && this.mouse.x <= iv.xl + 8 ) {
+          var xOffset = bounds.left;
+          var leftSide = iv.xl + xOffset;
+          var rightSide = iv.xr + xOffset;
+          if ( this.mouse.x >= leftSide && this.mouse.x <= leftSide + 8 ) {
             this.mouse.mode = wResize;
-          }else if ( this.mouse.x >= iv.xr-8 && this.mouse.x <= iv.xr ) {
+          } else if ( this.mouse.x >= rightSide - 8 && this.mouse.x <= rightSide ) {
             this.mouse.mode = eResize;
-          
-          } else if ( this.mouse.x >= iv.xl+8 && this.mouse.x <= iv.xr - 8 ) {
+          } else if ( this.mouse.x >= leftSide + 8 && this.mouse.x <= rightSide - 8 ) {
           
             ////  // // console.log("this.mouse.x", this.mouse.x);
             ////  // // console.log("iv", iv);
@@ -550,7 +550,6 @@
             this.mouse.mode = drag;
           }
         }
-
         
         thumbLeft = thumbRight = false;
 
@@ -611,7 +610,7 @@
 
 					// // console.log( this.mouse.x );
 					
-          this.mouse.hovering.outPoint = this.options.duration / this.width * (this.mouse.x+4);
+          this.mouse.hovering.outPoint = this.options.duration / this.width * (this.mouse.x+4-bounds.left);
 
           if ( this.options.mode !== "smartZoom" ) {
 
@@ -639,7 +638,7 @@
         
           thumbLeft = true;
           document.body.style.cursor="w-resize";
-            this.mouse.hovering.inPoint = this.options.duration / this.width * (this.mouse.x-4);
+            this.mouse.hovering.inPoint = this.options.duration / this.width * (this.mouse.x-4-bounds.left);
             if ( this.options.mode !== "smartZoom" ) {
               this.mouse.hovering.popcornEvent.start = this.mouse.hovering.inPoint;
             } else {
@@ -662,16 +661,15 @@
           
           diff = this.mouse.hovering.outPoint - this.mouse.hovering.inPoint;
           
-          this.mouse.hovering.inPoint = (this.mouse.x-this.mouse.hovering.grabX) / this.width * this.options.duration;
+          var mouseX = this.mouse.x - this.mouse.hovering.grabX;
+
+          this.mouse.hovering.inPoint = mouseX / this.width * this.options.duration;
           this.mouse.hovering.outPoint = this.mouse.hovering.inPoint + diff;
-          
                    
           if ( this.options.mode !== "smartZoom" ) {
             
-            
             this.mouse.hovering.popcornEvent.start = this.mouse.hovering.inPoint ;
             this.mouse.hovering.popcornEvent.end = this.mouse.hovering.outPoint ;
-            
             
           } else {
 
@@ -712,6 +710,8 @@
       
         ////  // // console.log("mouseup");
         //this.mouse.mode = auto;
+
+        this.mouse.mode = auto;
         
         if ( this.mouse.hovering && this.mouse.down ) {
           
@@ -759,6 +759,9 @@
 					//  //  // // console.log( "_hover:mouseleave", "this.mouse.hovering", this.mouse.hovering );
           this.mouse.hovering.hovered = false;
         }
+
+        this.mouse.hovering = null;
+        this.mouse.mode = auto;
         
         document.body.style.cursor="auto";
         
