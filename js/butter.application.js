@@ -2662,35 +2662,8 @@
         return;
       }
 
-      var increment = Math.round( $("#ui-tracks-time-canvas").innerWidth() / $popcorn.video.duration ),
-          scrubberTime = 0,
-          timeDistance = 0,
-          quarterTime = 0;
-
-      //console.log(increment);
-      //  The scrubber handle may have been moved, we must account for this
-      if ( $scrubberHandle.position().left > $trackeditting.position().left ) {
-
-        scrubberTime = ( $scrubberHandle.position().left - $trackeditting.position().left ) / increment;
-
-      }
-
-      //  Calculate distance scrolled by baseline editting area left - scrolling area left / increment = time
-      timeDistance = ( $trackeditting.position().left - $("#ui-tracks-time-canvas").position().left )  / increment;
-
-      //  Get the quarterTime and pad with a 1/4 of a sec
-      //_( timeDistance ).fourth() + 0.25;
-      quarterTime = timeDistance;
-
-      //  Update currentTime to trigger scrubber position update
-      //_( quarterTime + ( scrubberTime || 0 ) ).fourth() ;
-      $popcorn.video.currentTime = Math.round( quarterTime + ( scrubberTime || 0 ) );
-
-      setTimeout(function() {
-
-        $scrubberHandle.css("left", ( $scrubberHandle.position().left + 4 ) + "px");
-
-      }, 100);
+      // force an update of the video's time
+      $popcorn.video.currentTime = $popcorn.video.currentTime;
 
     });
 
