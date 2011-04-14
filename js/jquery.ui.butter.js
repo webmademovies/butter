@@ -433,7 +433,7 @@
 
 
 			//	STABLE MOUSE OVER POSITIONS
-      this.mouse.x = e.clientX - this.element[0].offsetLeft + scrollX + this.element[0].parentNode.scrollLeft;
+      this.mouse.x = e.clientX; // - this.element[0].offsetLeft + scrollX + this.element[0].parentNode.scrollLeft;
       this.mouse.y = e.clientY - this.element[0].offsetTop + scrollY;
 
 
@@ -445,8 +445,6 @@
 
 			//// // console.log( "this.element[0].getBoundingClientRect()",this.element[0].getBoundingClientRect() );
 			//// // console.log( "this.mouse.x", this.mouse.x );
-
-			
 
 
       //// // console.log( this.mouse.x, this.mouse.y );
