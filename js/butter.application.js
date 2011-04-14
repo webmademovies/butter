@@ -428,6 +428,7 @@
       }
     });
 
+
     $win.bind("keydown", function ( event ) {
       if ( event.which === 32 && openDialogs === 0 ) {
         var name = event.target.tagName.toLowerCase();
@@ -1724,6 +1725,8 @@
 
         typemap: {
 
+          "code" : "textarea",
+          "project" : "textarea",
           "preview" : "iframe",
           "embeddable" : "textarea",
           "full" : "textarea"
@@ -1764,7 +1767,8 @@
 
             $textarea.val( compiled );
 
-            $parent.html( $textarea );
+            $parent.empty();
+            $parent.append( $textarea );
 
           }
         }
@@ -1822,9 +1826,60 @@
         });
       },
 
+      import: function() {
+
+        var $textArea = $("<textarea/>");
+
+        function doImport() {
+          var blob = JSON.parse($textArea.val());
+          TrackMeta.project.load( blob.data.data, blob );
+          console.log(blob);
+          $doc.data( "current", {
+            tracks: blob.data.data,
+            project: blob
+          });
+        }
+
+        var $div = $("#ui-user-input");
+
+        var $form = $("<form/>");
+        var $fieldset = $("<fieldset/>");
+        $fieldset.append('<label>Butter Project Source:</label>');
+        $fieldset.append($textArea);
+        $form.append($fieldset);
+        $div.append($form);
+
+        $div.dialog({
+
+          model: true,
+          width: 500,
+          height: 450,
+          autoOpen: true,
+          title: "Import Butter Project",
+
+          beforeClose: function() {
+            $("#ui-user-input").empty();
+          },
+
+          buttons: {
+
+           "Close": function() {
+              $(this).dialog( "close" );
+            },
+
+            "Ok": function() {
+              $(this).dialog( "close" );
+              doImport();
+            },
+ 
+          }
+        });
+
+      },
+
       remove: function() {
 
-        var store = trackStore || new TrackStore(),
+        var store = new TrackStore(),
             title = $ioVideoTitle.val(),
             slug = _( title ).slug();
 
@@ -1858,7 +1913,7 @@
           return;
         }
 
-        var store = trackStore || new TrackStore(),
+        var store = new TrackStore(),
             title = autosaveTitle || $ioVideoTitle.val(),
             desc = $ioVideoDesc.val(),
             remote = $ioVideoUrl.val(),
@@ -1919,6 +1974,8 @@
           autosaveEnabled = true;
 
         }
+
+        trackStore = store;
 
       },
 
@@ -2116,7 +2173,7 @@
     });
 
     //  Render Export menu
-    _.each( [ "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
+    _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
       $li = $("<li/>", {
 
@@ -2254,14 +2311,13 @@
         });
       });
 
-
       //  If no mthods were compiled, then there are no tracks and
       //  hence, nothing to preview. Doing so will throw an exception
       if ( !methods.length ) {
 
         $doc.trigger( "applicationError", {
           type: "Stage Empty",
-          message: "I cannot export your movie - the stage is totes empty!"
+          message: "Your timeline is empty. There is nothing to export!"
         });
 
         return;
@@ -2342,7 +2398,20 @@
         _.each( exports, function ( fragment, key) {
           compiled += fragment;
         });
-      } else {
+      }
+      else if ( type === "code" ) {
+        compiled = playbackAry.join('\n');
+      }
+      else if ( type === "project" ) {
+        tempStore.Title( $ioVideoTitle.val() );
+        tempStore.Description( $ioVideoDesc.val() );
+        tempStore.Remote( $ioVideoUrl.val() );
+        tempStore.Theme( $themelist.attr( "data-theme" ) );
+        tempStore.Layout( $layoutlist.attr( "data-layout" ) );
+        tempStore.data = deserial;
+        compiled = JSON.stringify( tempStore );
+      }
+      else {
         //  Only compile fragment
         compiled = exports.scripts + "\n" + exports.theme + "\n" + exports.layout + "\n" + exports.html;
       }
