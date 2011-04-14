@@ -1,6 +1,6 @@
 body {
-  -webkit-user-select: none;
-  -moz-user-select: none;
+  /*-webkit-user-select: none;
+  -moz-user-select: none;*/
   padding-bottom: 20px;
 }
 
@@ -42,6 +42,8 @@ z-index:9995;
   overflow-y:scroll;
   */
   overflow-x:scroll;
+  -webkit-user-select: none;
+  -moz-user-select: none;
 }
 
 /*, #ui-plugin-tools*/
