@@ -2712,11 +2712,13 @@
 
       var $this = $(this),
           increment = Math.round( $("#ui-tracks-time-canvas").innerWidth() / $popcorn.video.duration ),
-          quarterTime = _( event.offsetX / increment ).fourth();
+          quarterTime = _( (event.clientX - $tracktime.offset().left) / increment ).fourth();
 
       $popcorn.video.currentTime = quarterTime;
 
       $uitracks.trigger( "scrollstop" );
+
+      
 
     });
 
