@@ -994,7 +994,7 @@
 
                     //console.log(increment, quarterTime, Math.round( $uitracks.width() / 2 ));
                     //  #8402231
-                    if ( trackMouseState === "mouseup" && ( $scrubberHandle.position().left < 0 || $scrubberHandle.position().left + quarterTime >= $uitracks.innerWidth() ) ) {
+                    if ( $popcorn.video.paused === false && trackMouseState === "mouseup" && ( $scrubberHandle.position().left < 0 || $scrubberHandle.position().left + quarterTime >= $uitracks.innerWidth() ) ) {
                     //if ( $scrubberHandle.position().left > $uitracks.position().left + Math.round( horizIncrement * 3 ) ) {
 
                       //$uitracks.scrollLeft( $tracktimecanvas.innerWidth() ); //stable
