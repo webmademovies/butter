@@ -394,6 +394,7 @@
         $uiStartScreen = $("#ui-start-screen"),
         $uiApplicationMsg = $("#ui-application-error"),
 
+        trackMouseState = "mouseup",
 
         selectedEvent = null,
         lastSelectedEvent = null,
@@ -947,7 +948,7 @@
             TrackEditor.moveScrubberToPosition( 0 );
 
             //  Listen on timeupdates
-            $popcorn.listen( "timeupdate", function() {
+            $popcorn.listen( "timeupdate", function( event ) {
 
               //  Updates the currenttime display
               $ioCurrentTime.val(function() {
@@ -993,7 +994,7 @@
 
                     //console.log(increment, quarterTime, Math.round( $uitracks.width() / 2 ));
                     //  #8402231
-                    if ( $scrubberHandle.position().left + quarterTime >= $uitracks.position().left + $uitracks.innerWidth() ) {
+                    if ( trackMouseState === "mouseup" && ( $scrubberHandle.position().left < 0 || $scrubberHandle.position().left + quarterTime >= $uitracks.innerWidth() ) ) {
                     //if ( $scrubberHandle.position().left > $uitracks.position().left + Math.round( horizIncrement * 3 ) ) {
 
                       //$uitracks.scrollLeft( $tracktimecanvas.innerWidth() ); //stable
@@ -1010,7 +1011,8 @@
                         //  This needs improvement
                         $uitracks.animate({
 
-                          scrollLeft: "+=" + Math.round( $tracktimecanvas.innerWidth() / 8 )
+                          //scrollLeft: "+=" + Math.round( $tracktimecanvas.innerWidth() / 8 )
+                          scrollLeft: $tracktimecanvas.innerWidth()/$popcorn.video.duration*$popcorn.video.currentTime
 
                         }, "slow", function () {
 
@@ -1027,7 +1029,6 @@
                         }); // 600
                       }
                     }
-
 
                     TrackEditor.inProgress = false;
                     clearInterval( isReadyInterval );
@@ -2702,23 +2703,54 @@
 
     });
 
+    // This if block allows trackMouseState to change only for Moz browsers, since
+    // mouseup events aren't fired on scrollbars in any other browser (it's a bug).
+    if ($.browser.mozilla) {
+      $uitracks.bind( "mousedown mouseup", function( event ) {
+        trackMouseState = event.type;
+      });
+    }
+    else {
+      trackMouseState = undefined;
+    } //if
 
     //  Listen for clicks on the timescale display
     $tracktime.bind( "click", function( event ) {
 
-      if ( !$popcorn.video ) {
+      if ( !$popcorn || !$popcorn.video ) {
         return;
       }
 
-      var $this = $(this),
-          increment = Math.round( $("#ui-tracks-time-canvas").innerWidth() / $popcorn.video.duration ),
-          quarterTime = _( (event.clientX - $tracktime.offset().left) / increment ).fourth();
+      if ( event.ctrlKey ) {
+        var $tracktimecanvas = $("#ui-tracks-time-canvas");
+        $uitracks.animate({
 
-      $popcorn.video.currentTime = quarterTime;
+          scrollLeft: $tracktimecanvas.innerWidth()/$popcorn.video.duration*$popcorn.video.currentTime
 
-      $uitracks.trigger( "scrollstop" );
+        }, "slow", function () {
 
-      
+          var quarterTime = Math.ceil( quarterTime ),
+              increment = Math.round( $tracktimecanvas.width() / $popcorn.video.duration );
+
+          TrackEditor.setScrubberPosition(
+            ( increment * quarterTime ) + $tracktimecanvas.position().left + 1,
+            {
+              increments: increment,
+              current: quarterTime
+            }
+          );
+        }); // 600
+
+      }
+      else {
+        var $this = $(this),
+            increment = Math.round( $("#ui-tracks-time-canvas").innerWidth() / $popcorn.video.duration ),
+            quarterTime = _( (event.clientX - $tracktime.offset().left) / increment ).fourth();
+
+        $popcorn.video.currentTime = quarterTime;
+      } //if
+
+      //$uitracks.trigger( "scrollstop" );
 
     });
 
