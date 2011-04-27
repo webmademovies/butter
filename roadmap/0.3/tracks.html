@@ -1,0 +1,116 @@
+<html>
+  <head>
+    <title>Butter 0.3 Track Example</title>
+    <link href="../lib/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.js"></script>
+    <script type="text/javascript">
+      $(document).ready( function (e) {
+        var $main = $('#div-main'),
+            $mainContainer = $('#div-main-container');
+
+        for (var i=0; i<4; ++i) {
+          var titles = ['Right Div', 'Bottom Div', 'Top Div', 'Left Div'];
+          $mainContainer.append('<div class="div-track"><span class="span-track-title">'+titles[i]+'</span></div>');
+        } //for
+
+        $('.span-plugin').draggable({
+          revert: true,
+          helper: 'clone',
+          drag: function (event, ui) {
+          },
+          start: function (event, ui) {
+            ui.helper.css('opacity', 0.5);
+          },
+          stop: function (event, ui) {
+          },
+        });
+
+        function addTrackEvent(track, title, mouseX) {
+          var $trackEvent = $('<div class="div-track-event">'+title+'</div>');
+          $(track).append($trackEvent);
+          $trackEvent.css('left', mouseX-$trackEvent.width()/2);
+          $trackEvent.draggable({
+            containment: '#div-main-container',
+            snap: '.div-track',
+            snapMode: 'inner',
+          });
+        }; //addTrackEvent
+
+        $('.div-track').droppable({
+          accept: '.span-plugin',
+          hoverClass: 'ui-state-active',
+          drop: function (event, ui) {
+            addTrackEvent(this, ui.draggable.html(), event.pageX);
+          },
+        });
+        $('.span-track-title').droppable();
+
+      }); //ready block
+    </script>
+    <style>
+      html { width: 100%; height: 100%; margin: 0; padding: 0; }
+      body { width: 100%; height: 100%; margin: 0; padding: 0; font: 12pt Helvetica; }
+      #div-main { 
+        width: 90%; 
+        height: 300px; 
+        margin: auto; 
+        margin-top: 2em; 
+        overflow: scroll;
+      }
+      .div-track { 
+        margin: 0; 
+        padding: 2px; 
+        width: 3000px; 
+        background: -moz-linear-gradient(center bottom, rgb(204, 204, 204) 0%, rgb(255, 255, 255) 76%); 
+        height: 2em; 
+        position: relative;
+      }
+      #div-plugins { 
+        width: 90%; 
+        margin: auto; 
+        margin-top: 2em;
+      }
+      .span-track-title { 
+        font: 10pt Helvetica;
+      }
+      .span-plugin { 
+        border: 1px solid transparent; 
+        border-radius: 15px; 
+        margin: 5px; 
+        padding: 10px; 
+        background: -moz-linear-gradient(center bottom, rgb(204, 204, 204) 0%, rgb(255, 255, 255) 76%); 
+        cursor: pointer;
+        position: relative;
+      }
+      .div-track-event {
+        background: rgba(180, 200, 10, 0.4);
+        font-size: 60%;
+        width: 200px;
+        height: 100%;
+        z-index: 10;
+        position: absolute;
+        top: 0px;
+        cursor: pointer;
+      }
+
+      .div-track-event:hover {
+        background: rgba(180, 200, 10, 0.8);
+      }
+
+      #div-main-container {
+        width: 4000px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="div-main" class="ui-widget-content">
+      <div id="div-main-container">
+      </div>
+    </div>
+    <div id="div-plugins" class="ui-widget-content">
+      <span id="button-plugins-googlemaps" class="span-plugin" />Googlemaps</span>
+      <span id="button-plugins-wikipedia" class="span-plugin" />Wikipedia</span>
+    </div>
+  </body>
+</html>
