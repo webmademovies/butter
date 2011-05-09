@@ -2342,7 +2342,11 @@
           var $videoDiv = $("<div/>", { className: "butter-video-player" } ),
               $videoClone = $clone.children("video").clone();
 
-              $videoClone.attr("controls", "controls");
+          $videoClone.attr("autobuffer", "true");
+          $videoClone.attr("preload", "auto");
+          
+          //this forces controls="true" instead of controls="" (bug?)
+          $videoClone[0].setAttribute("controls", "true");
 
           $videoDiv
             .append( '\n        <h1 id="videoTitle">' + $ioVideoTitle.val() + '</h1>\n        ')
