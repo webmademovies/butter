@@ -1356,6 +1356,12 @@
 
           });
 
+          if ( PLUGIN_DEFAULTS[ trackType ] ) {
+
+            _.extend( startWith, PLUGIN_DEFAULTS[ trackType ] );
+
+          }
+
           //  Explicitly augment the starting object with all manifest props
           _.forEach( trackManifest.options, function( obj, key ) {
             if ( !( key in startWith ) ) {
@@ -2128,6 +2134,16 @@
 
 
     var PLUGIN_BLACKLIST = ['openmap', 'mustache', 'lowerthird'];
+    var PLUGIN_DEFAULTS = {
+
+      wikipedia: {
+        
+        src: 'http://en.wikipedia.org/wiki/Mozilla',
+
+      },
+
+    };
+
     //  Load plugins to ui-plugin-select-list
     _.each( Popcorn.registry, function( plugin, v ) {
       // TODO: convert to templates
