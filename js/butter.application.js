@@ -2174,6 +2174,25 @@
       });
     });
 
+    $("#prj-details").click(function(){
+      $("#prjDiv").dialog({
+        modal: false,
+        title: "Project Details",
+        autoOpen: true,
+        width: 400,
+        height: 435,
+        buttons:
+          {
+            "Close": function() {
+              $(this).dialog( "close" );
+            }
+          }
+
+
+
+      });
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
