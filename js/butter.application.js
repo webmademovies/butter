@@ -392,7 +392,6 @@
 
 
         $uiStartScreen = $("#ui-start-screen"),
-        $helpBtn = $("#help-btn"),
         $uiApplicationMsg = $("#ui-application-error"),
 
         trackMouseState = "mouseup",
