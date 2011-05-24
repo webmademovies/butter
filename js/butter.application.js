@@ -467,11 +467,6 @@
     //  Decorate UI buttons
     $("button,.ui-menu-controls").button();
 
-    //  Render accordion panels
-    $(".ui-accordion-panel").accordion({
-      fillSpace:  true
-    }).css("marginTop", "-1px");
-
     //  Render menusets ( create with: button + ul )
     $(".ui-menuset").each( function() {
 
@@ -553,22 +548,19 @@
         stageWidth
       );
 
-      var $drawers = $("#ui-accordion-tools h3.ui-accordion-header"),
-          $uiPanelPlugins = $("#ui-panel-plugins"),
+      var $uiPanelPlugins = $("#ui-panel-plugins"),
           outerWest = $(".outer-west").height(),
-          heightDiff = $("#ui-panel-video").height(),
-          headerHeight = $drawers.height();
+          heightDiff = $("#ui-panel-video").height();
 
       $uiPanelPlugins
         .height( outerWest - heightDiff )
           .css("margin-top", "5px");
 
-      $(".ui-accordion-panel div")
+      $(".ui-command-panel div")
         .height(
-          outerWest - heightDiff - (
-            headerHeight * ( $drawers.length + 2 )
-          )
-        );
+          outerWest - heightDiff
+        ).css({"marginTop": "10px", "background-color": "#FFFFFF", "border": "2px solid #0fe",
+               "padding-left": "28px", "padding-top": "28px"});
 
       //  Set Scrubber Height
       TrackEditor.setScrubberHeight();

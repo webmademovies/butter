@@ -150,10 +150,6 @@ canvas{
   */
 }
 
-#ui-tools-accordion {
-  /*height: 300px;*/
-}
-
 .select-ul{margin-left:0;padding-left:0;}
 .select-li{padding:.1em;list-style-type:none}
 .select-li h3 { margin-bottom: 0; }
@@ -177,14 +173,9 @@ canvas{
   overflow: auto;
 }
 
-.ui-accordion-panel div {
+.ui-command-panel div {
   /*height: 290px;*/
   /*height:222px;*/
-  overflow-y:scroll;
-}
-
-#ui-tools-accordion div {
-  /*height: 180px;*/
   overflow-y:scroll;
 }
 
