@@ -176,7 +176,13 @@ canvas{
 .ui-command-panel div {
   /*height: 290px;*/
   /*height:222px;*/
-  overflow-y:scroll;
+  margin-top: 3px;
+  background-color: #FFFFFF;
+  border: 1px solid #111111;
+  padding-left: 15px;
+  padding-top: 15px;
+  height: 525px;
+  overflow:auto;
 }
 
 #ui-scrubber-handle{

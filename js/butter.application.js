@@ -558,9 +558,8 @@
 
       $(".ui-command-panel div")
         .height(
-          outerWest - heightDiff
-        ).css({"marginTop": "10px", "background-color": "#FFFFFF", "border": "2px solid #0fe",
-               "padding-left": "28px", "padding-top": "28px"});
+          outerWest - heightDiff - ( 50 )
+        );
 
       //  Set Scrubber Height
       TrackEditor.setScrubberHeight();
