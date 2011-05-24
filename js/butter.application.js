@@ -2192,7 +2192,7 @@
       asdf.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
                        "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
       $(asdf).dialog({
-        modal: false,
+        modal: true,
         title: "Help",
         autoOpen: true,
         width: 400,
