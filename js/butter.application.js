@@ -2188,10 +2188,10 @@
 
     //  Render Help menu
     $("#help-btn").click(function(){
-      var asdf = document.createElement("div");
-      asdf.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
+      var help_div = document.createElement("div");
+      help_div.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
                        "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
-      $(asdf).dialog({
+      $(help_div).dialog({
         modal: true,
         title: "Help",
         autoOpen: true,
