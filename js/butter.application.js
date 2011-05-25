@@ -747,9 +747,9 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+            if ( !isNaN( $p.video.duration )  ) {
 
-
+            $p.video.duration = 100;
             //console.log("$p.video.readyState >= 2 && $p.video.duration", $p.video.duration);
 
               //  execute callback if one was given
@@ -819,7 +819,6 @@
 
         loadVideoFromUrl: function( callback ) {
 
-
           $doc.trigger( "videoLoadStart" );
 
 
@@ -837,6 +836,10 @@
 
           this.unload.video();
 
+          if( url.search(/youtube/i) >= 0 ) {
+            $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: $("#video-div").width, height: $("#video-div").height } ) );
+          } else {
+
 
           //  Create a new source element and append to the video element
           $source = $("<source/>", {
@@ -848,18 +851,18 @@
 
           //  Store the new Popcorn object in the cache reference
           $popcorn = Popcorn("#video");
+          }
 
           //  Ensure that the network is ready
           netReadyInt = setInterval( function () {
 
-
             //  Firefox is an idiot
-            if ( $popcorn.video.currentSrc === url ) {
+            //if ( $popcorn.video.currentSrc === url ) {
 
               self.timeLineReady( $popcorn, timelineReadyFn );
               clearInterval( netReadyInt );
 
-            }
+            //}
 
           }, 13);
 
@@ -878,7 +881,6 @@
 
             $ioVideoTitle.val("");
             $ioVideoDesc.val("");
-
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -1044,7 +1046,6 @@
 
             //  Trigger timeupdate to initialize the current time disp lay
             $popcorn.trigger( "timeupdate" );
-
 
             //  If a callback was provided, fire now
             callback && callback();
