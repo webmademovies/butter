@@ -2176,7 +2176,7 @@
 
     $("#prj-details").click(function(){
       $("#prjDiv").dialog({
-        modal: false,
+        modal: true,
         title: "Project Details",
         autoOpen: true,
         width: 400,
