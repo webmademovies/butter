@@ -910,38 +910,51 @@
             //  Destroy scrubber draggable
             $scrubberHandle.draggable("destroy");
 
+            (function() {
+              //storing pause/play state when scrubber is dragged
+              var wasPaused = false;
+              
+              //  Create scrubber draggable
+              $scrubberHandle.draggable({
 
-            //  Create scrubber draggable
-            $scrubberHandle.draggable({
-
-              scroll: true,
-              scrollSensitivity: 50,
-              scrollSpeed: 200,
+                scroll: true,
+                scrollSensitivity: 50,
+                scrollSpeed: 200,
 
 
-              axis: "x",
-              containment: "#ui-track-editting",
+                axis: "x",
+                containment: "#ui-track-editting",
 
-              grid: [ increment / 8, 0 ],
-              //distance: increment / 4 / 2,
-              start: function() {
-                TrackEditor.isScrubbing = true;
-              },
-              stop: function() {
-                TrackEditor.isScrubbing = false;
-              },
-              drag: function( event, ui ) {
+                grid: [ increment / 8, 0 ],
+                //distance: increment / 4 / 2,
+                start: function() {
+                  TrackEditor.isScrubbing = true;
+                  if ( !$popcorn.media.paused ) {
+                    $popcorn.media.pause();
+                    wasPaused = true;
+                  }
+                },
+                stop: function() {
+                  TrackEditor.isScrubbing = false;
+                  if (wasPaused) { 
+                    $popcorn.media.play();
+                    wasPaused = false;
+                  }                  
+                },
+                drag: function( event, ui ) {
+                !$popcorn.media.paused && $popcorn.media.pause();
 
-                //console.log( ui, ui.offset.left );
-                var scrubPosition = ui.position.left  - $tracktimecanvas.position().left,
-                    updateTo = $popcorn.video.duration / $tracktimecanvas.innerWidth() * scrubPosition,
-                    quarterTime = _( updateTo ).fourth();
+                  //console.log( ui, ui.offset.left );
+                  var scrubPosition = ui.position.left  - $tracktimecanvas.position().left,
+                      updateTo = $popcorn.video.duration / $tracktimecanvas.innerWidth() * scrubPosition,
+                      quarterTime = _( updateTo ).fourth();
 
-                //  Force the time to be in quarters of a second
-                $popcorn.video.currentTime = quarterTime;
+                  //  Force the time to be in quarters of a second
+                  $popcorn.video.currentTime = quarterTime;
 
-              }
-            });
+                }
+              });
+            })()
 
             $popcorn.video.currentTime = 0;
 
