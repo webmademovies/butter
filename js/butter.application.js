@@ -414,6 +414,7 @@
         autosaveIndex = 0,
         autosaveEnabled = true, 
         MAX_AUTOSAVES = 5,
+        nonHTML5 = false,
         AUTOSAVE_INTERVAL = 30000;
 
         openDialogs = 0;
@@ -747,9 +748,19 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if ( !isNaN( $p.video.duration )  ) {
+            if( $ioVideoUrl.val() == "baseplayer"  ){
+              callback && callback();
 
-            $p.video.duration = 100;
+              //  Allows other unrelated parts of the
+              //  application to react when a video is ready
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" );
+
+              //  clear the interval
+              clearInterval( onReadyInterval );
+            }
+            else if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+              $p.pause();
             //console.log("$p.video.readyState >= 2 && $p.video.duration", $p.video.duration);
 
               //  execute callback if one was given
@@ -776,7 +787,6 @@
 
             //  When ready, draw the timeline
             this.drawTimeLine( $p.video.duration );
-
             //  execute callback if one was given
             callback && callback();
 
@@ -800,11 +810,15 @@
               $v.remove();
             }
 
-            $video = $( "<video/>", {
+            if( $ioVideoUrl.val().search(/youtube/i) <= 0 && $ioVideoUrl.val().search(/vimeo/i) <= 0 && $ioVideoUrl.val().search(/soundcloud/i) <= 0 && $ioVideoUrl.val() != "baseplayer" ){
 
-              id: "video"
+              $video = $( "<video/>", {
 
-            }).prependTo( "#ui-panel-video" );
+                id: "video"
+
+              }).prependTo( "#video-div" );
+
+            }
 
           },
 
@@ -813,6 +827,7 @@
           },
 
           timescale: function() {
+
             TrackEditor.deleteCanvas( "ui-tracks-time", "ui-tracks-time-canvas" );
           }
         },
@@ -835,9 +850,38 @@
 
 
           this.unload.video();
+          if( url == "baseplayer" ) {
+            $popcorn = Popcorn ( Popcorn.baseplayer() );
+            $popcorn._resource = document.getElementById('video-div');
+            $popcorn.play();
+            setTimeout( function () {
 
-          if( url.search(/youtube/i) >= 0 ) {
-            $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: $("#video-div").width, height: $("#video-div").height } ) );
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+            }, 13);
+          } else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
+            if( url.search(/youtube/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: 430, height: 300 } ) );
+              $popcorn.play();
+            }
+            else if( url.search(/vimeo/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.vimeo( "video-div", url, {
+                css: {
+                  width: "430px",
+                  height: "300px"
+                }
+              }));
+              $popcorn.play();
+            }
+            else if( url.search(/soundcloud/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.soundcloud( "video-div", url) );
+              $popcorn.play();
+            }
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+          }, 13);
           } else {
 
 
@@ -851,21 +895,19 @@
 
           //  Store the new Popcorn object in the cache reference
           $popcorn = Popcorn("#video");
-          }
 
-          //  Ensure that the network is ready
           netReadyInt = setInterval( function () {
 
             //  Firefox is an idiot
-            //if ( $popcorn.video.currentSrc === url ) {
+            if ( $popcorn.video.currentSrc === url ) {
 
               self.timeLineReady( $popcorn, timelineReadyFn );
               clearInterval( netReadyInt );
 
-            //}
+            }
 
           }, 13);
-
+          }
 
           //  When new video and timeline are ready
           timelineReadyFn = function() {
@@ -943,10 +985,11 @@
 
             //  Listen on timeupdates
             $popcorn.listen( "timeupdate", function( event ) {
-
+              //console.log($ioCurrentTime.val());
               //  Updates the currenttime display
+              //console.log($ioCurrentTime.val());
               $ioCurrentTime.val(function() {
-
+                
                 var $this = $(this),
                     prop = _( this.id.replace("io-", "") ).camel(),
                     val = $popcorn[ prop ]();
@@ -1152,8 +1195,8 @@
 
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 800;
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
-          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
+          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
           if ( TrackEditor.timeLineWidth > 32767 ) {
 
@@ -1233,6 +1276,7 @@
             }
 
             context.stroke();
+
           }
         }
       };
