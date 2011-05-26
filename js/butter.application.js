@@ -414,7 +414,6 @@
         autosaveIndex = 0,
         autosaveEnabled = true, 
         MAX_AUTOSAVES = 5,
-        nonHTML5 = false,
         AUTOSAVE_INTERVAL = 30000;
 
         openDialogs = 0;
@@ -985,9 +984,7 @@
 
             //  Listen on timeupdates
             $popcorn.listen( "timeupdate", function( event ) {
-              //console.log($ioCurrentTime.val());
               //  Updates the currenttime display
-              //console.log($ioCurrentTime.val());
               $ioCurrentTime.val(function() {
                 
                 var $this = $(this),
