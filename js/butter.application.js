@@ -411,7 +411,7 @@
         // Autosaving
         autosaveInterval = -1,
         autosaveEnabled = true,
-        AUTOSAVE_INTERVAL = 10000;
+        AUTOSAVE_INTERVAL = 30000;
 
         openDialogs = 0;
 
