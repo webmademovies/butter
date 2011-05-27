@@ -410,9 +410,7 @@
 
         // Autosaving
         autosaveInterval = -1,
-        //autosaveIndex = 0,
-        autosaveEnabled = true, 
-        //MAX_AUTOSAVES = 5,
+        autosaveEnabled = true,
         AUTOSAVE_INTERVAL = 10000;
 
         openDialogs = 0;
@@ -1790,9 +1788,7 @@
 
           var name = $ioVideoTitle.val() + "-Autosave";
           console.log (name);
-          //console.log ($ioVideoTitle.val());
           controls.save(name);
-          //autosaveIndex = (autosaveIndex + 1) % MAX_AUTOSAVES;
 
         } //if
       },
