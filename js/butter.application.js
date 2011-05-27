@@ -416,7 +416,8 @@
         MAX_AUTOSAVES = 5,
         AUTOSAVE_INTERVAL = 30000;
 
-        openDialogs = 0;
+        openDialogs = 0,
+        tempVideoUrl = "";
 
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
@@ -832,7 +833,7 @@
         },
 
         loadVideoFromUrl: function( callback ) {
-
+         document.getElementById("video-div").innerHTML = " ";
           $doc.trigger( "videoLoadStart" );
 
 
@@ -847,8 +848,9 @@
               netReadyInt,
               timelineReadyFn;
 
-
+          tempVideoUrl = $ioVideoUrl.val();
           this.unload.video();
+
           if( url == "baseplayer" ) {
             $popcorn = Popcorn ( Popcorn.baseplayer() );
             $popcorn._resource = document.getElementById('video-div');
@@ -1935,9 +1937,9 @@
 
       },
       save: function( autosaveTitle ) {
-
+ 
         autosaveTitle = autosaveTitle || false;
-
+        console.log($popcorn.data);
         if ( !$popcorn || !$popcorn.data ) {
 
           $doc.trigger( "applicationError", {
@@ -1957,7 +1959,7 @@
             slug;
 
 
-        if ( !title ) {
+        if ( !title && tempVideoUrl == $ioVideoUrl.val() ) {
 
           $doc.trigger( "applicationError", {
             type: "No Title",
@@ -1967,7 +1969,7 @@
           return;
         }
 
-
+        !title ? title = "Butter " + new Date() : title;
         slug = _( title ).slug();
 
 
