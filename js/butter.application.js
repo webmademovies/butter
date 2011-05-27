@@ -467,11 +467,6 @@
     //  Decorate UI buttons
     $("button,.ui-menu-controls").button();
 
-    //  Render accordion panels
-    $(".ui-accordion-panel").accordion({
-      fillSpace:  true
-    }).css("marginTop", "-1px");
-
     //  Render menusets ( create with: button + ul )
     $(".ui-menuset").each( function() {
 
@@ -553,21 +548,17 @@
         stageWidth
       );
 
-      var $drawers = $("#ui-accordion-tools h3.ui-accordion-header"),
-          $uiPanelPlugins = $("#ui-panel-plugins"),
+      var $uiPanelPlugins = $("#ui-panel-plugins"),
           outerWest = $(".outer-west").height(),
-          heightDiff = $("#ui-panel-video").height(),
-          headerHeight = $drawers.height();
+          heightDiff = $("#ui-panel-video").height();
 
       $uiPanelPlugins
         .height( outerWest - heightDiff )
           .css("margin-top", "5px");
 
-      $(".ui-accordion-panel div")
+      $(".ui-command-panel div")
         .height(
-          outerWest - heightDiff - (
-            headerHeight * ( $drawers.length + 2 )
-          )
+          outerWest - heightDiff - ( 50 )
         );
 
       //  Set Scrubber Height
@@ -756,9 +747,19 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+            if( $ioVideoUrl.val() == "baseplayer"  ){
+              callback && callback();
 
+              //  Allows other unrelated parts of the
+              //  application to react when a video is ready
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" );
 
+              //  clear the interval
+              clearInterval( onReadyInterval );
+            }
+            else if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+              $p.pause();
             //console.log("$p.video.readyState >= 2 && $p.video.duration", $p.video.duration);
 
               //  execute callback if one was given
@@ -785,7 +786,6 @@
 
             //  When ready, draw the timeline
             this.drawTimeLine( $p.video.duration );
-
             //  execute callback if one was given
             callback && callback();
 
@@ -809,11 +809,15 @@
               $v.remove();
             }
 
-            $video = $( "<video/>", {
+            if( $ioVideoUrl.val().search(/youtube/i) <= 0 && $ioVideoUrl.val().search(/vimeo/i) <= 0 && $ioVideoUrl.val().search(/soundcloud/i) <= 0 && $ioVideoUrl.val() != "baseplayer" ){
 
-              id: "video"
+              $video = $( "<video/>", {
 
-            }).prependTo( "#ui-panel-video" );
+                id: "video"
+
+              }).prependTo( "#video-div" );
+
+            }
 
           },
 
@@ -822,12 +826,12 @@
           },
 
           timescale: function() {
+
             TrackEditor.deleteCanvas( "ui-tracks-time", "ui-tracks-time-canvas" );
           }
         },
 
         loadVideoFromUrl: function( callback ) {
-
 
           $doc.trigger( "videoLoadStart" );
 
@@ -845,6 +849,39 @@
 
 
           this.unload.video();
+          if( url == "baseplayer" ) {
+            $popcorn = Popcorn ( Popcorn.baseplayer() );
+            $popcorn._resource = document.getElementById('video-div');
+            $popcorn.play();
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+            }, 13);
+          } else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
+            if( url.search(/youtube/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: 430, height: 300 } ) );
+              $popcorn.play();
+            }
+            else if( url.search(/vimeo/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.vimeo( "video-div", url, {
+                css: {
+                  width: "430px",
+                  height: "300px"
+                }
+              }));
+              $popcorn.play();
+            }
+            else if( url.search(/soundcloud/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.soundcloud( "video-div", url) );
+              $popcorn.play();
+            }
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+          }, 13);
+          } else {
 
 
           //  Create a new source element and append to the video element
@@ -858,9 +895,7 @@
           //  Store the new Popcorn object in the cache reference
           $popcorn = Popcorn("#video");
 
-          //  Ensure that the network is ready
           netReadyInt = setInterval( function () {
-
 
             //  Firefox is an idiot
             if ( $popcorn.video.currentSrc === url ) {
@@ -871,7 +906,7 @@
             }
 
           }, 13);
-
+          }
 
           //  When new video and timeline are ready
           timelineReadyFn = function() {
@@ -887,7 +922,6 @@
 
             $ioVideoTitle.val("");
             $ioVideoDesc.val("");
-
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -950,10 +984,9 @@
 
             //  Listen on timeupdates
             $popcorn.listen( "timeupdate", function( event ) {
-
               //  Updates the currenttime display
               $ioCurrentTime.val(function() {
-
+                
                 var $this = $(this),
                     prop = _( this.id.replace("io-", "") ).camel(),
                     val = $popcorn[ prop ]();
@@ -1053,7 +1086,6 @@
 
             //  Trigger timeupdate to initialize the current time disp lay
             $popcorn.trigger( "timeupdate" );
-
 
             //  If a callback was provided, fire now
             callback && callback();
@@ -1160,8 +1192,8 @@
 
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 800;
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
-          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
+          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
           if ( TrackEditor.timeLineWidth > 32767 ) {
 
@@ -1241,6 +1273,7 @@
             }
 
             context.stroke();
+
           }
         }
       };
