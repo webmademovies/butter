@@ -1939,16 +1939,6 @@
       save: function( autosaveTitle ) {
  
         autosaveTitle = autosaveTitle || false;
-        console.log($popcorn.data);
-        if ( !$popcorn || !$popcorn.data ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Video Loaded",
-            message: "I cannot add a Track Event - there is no movie loaded."
-          });
-
-          return;
-        }
 
         var store = new TrackStore(),
             title = autosaveTitle || $ioVideoTitle.val(),
@@ -1957,17 +1947,6 @@
             theme = $themelist.attr( "data-theme" ),
             layout = $layoutlist.attr( "data-layout" ),
             slug;
-
-
-        if ( !title && tempVideoUrl == $ioVideoUrl.val() ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Title",
-            message: "You will need to add a title in order to save your project."
-          });
-
-          return;
-        }
 
         !title ? title = "Butter " + new Date() : title;
         slug = _( title ).slug();
@@ -1981,20 +1960,8 @@
         store.Autosave( autosaveTitle );
 
 
-        if ( !store.read( slug ) ) {
-
-         //console.log("creating....");
-
-          store.create( $popcorn.data.trackEvents.byStart );
-
-        } else {
-
-         //console.log("updating....");
-          store.update( slug, $popcorn.data.trackEvents.byStart );
-
-        }
-
-
+        //  Removed the if statement and creation of slug as we will always have a title now
+        store.update( slug, $popcorn.data.trackEvents.byStart );
 
         //  Reload/update menu
         TrackMeta.menu.load( "#ui-user-videos" );
