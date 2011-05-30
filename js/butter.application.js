@@ -351,6 +351,7 @@
   $(function() {
 
     var $popcorn,
+        $trackLine = new TrackLiner( "ui-tracklines" ),
         $doc = $(document),
         $win = $(global),
         $body = $("body"),
@@ -417,6 +418,18 @@
 
         openDialogs = 0;
 
+    $trackLine.plugin({
+      setup: function( popcornTrack, eventElement, trackElement ) {
+
+        eventElement.style.left = popcornTrack.start / $popcorn.duration() * trackElement.offsetWidth + "px";
+        eventElement.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * trackElement.offsetWidth + "px";
+      },
+      moved: function( popcornTrack, eventElement, trackElement ) {
+
+        popcornTrack.start = parseInt( eventElement.style.left, 10 ) / trackElement.offsetWidth * $popcorn.duration();
+        popcornTrack.end = ( parseInt( eventElement.style.left, 10 ) + eventElement.offsetWidth ) / trackElement.offsetWidth * $popcorn.duration();
+      }
+    });
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
       if ( event.type === "dialogopen" ) {
@@ -881,9 +894,11 @@
             var $tracktimecanvas = $("#ui-tracks-time-canvas"),
                 $prevTracks = $(".track"),
                 $plugins = $(".ui-plugin-pane"),
+                trackLineDiv = document.getElementById( "ui-tracklines" ),
                 increment = Math.round( $tracktimecanvas.width() / $popcorn.video.duration );
 
-
+            // this line can be removed if the length of the canvas dictates the length of the container
+            trackLineDiv.style.width = $tracktimecanvas.width() + "px";
             $ioVideoTitle.val("");
             $ioVideoDesc.val("");
 
@@ -1311,6 +1326,7 @@
         },
 
         addTrackEvent: function( type ) {
+console.log("calling addTrackEvent");
 
           if ( !$popcorn || !$popcorn.data ) {
 
@@ -1374,7 +1390,7 @@
           //  Reset startWith.id, allow Popcorn to create unique IDs
           startWith.id = false;
 
-
+console.log("creating popcorn track of type " + trackType);
           //  Call the plugin to create an empty track event
           $popcorn[ trackType ]( startWith );
 
@@ -1390,45 +1406,45 @@
           //  Capture this track event
           trackEvent = TrackEvents.getTrackEventById(lastEventId);
 
-
+console.log( trackEvent );
+          $trackLine.createTrack().createTrackEvent( trackEvent );
           //  Check for existing tracks of this type
           //  If no existing tracks, create them
-          if ( !activeTracks[ trackType ] ) {
-
+          //if ( !activeTracks[ trackType ] ) {
+console.log("creating track");
             //  Draw a new track placeholder
-            $track = $("<div/>", {
+            /*$track = $("<div/>", {
 
               "title": trackType,
               className: "span-21 last track track" + _.size( activeTracks )
 
-            }).insertAfter( "#ui-tracks-time" ); //"#ui-tracks"
+            }).insertAfter( "#ui-tracks-time" );*/ //"#ui-tracks"
 
-
-            $track.width( TrackEditor.timeLineWidth );
+            //$track.width( TrackEditor.timeLineWidth );
 
             //  Convert the placeholder into a track, with a track event
-            $track.track({
+            /*$track.track({
               target: $("#video"),
               duration: $popcorn.video.duration
-            });
+            });*/
 
 
-            $track.prepend('<span class="large track-label large" >' + _( trackType ).capitalize() + "</span>");
+            //$track.prepend('<span class="large track-label large" >' + _( trackType ).capitalize() + "</span>");
 
             //  Cache the track widget
-            activeTracks[ trackType ] = $track;
+            //activeTracks[ trackType ] = $track;
 
-          } else {
+          //} else {
 
             //  If a track of this type exists
-            $track = activeTracks[ trackType ];
+            //$track = activeTracks[ trackType ];
 
-          }
+          //}
 
           //  TODO: when a track of this type already exists...
           //  ensure we need to actually make "track" into something
 
-          $track.track( "addTrackEvent", {
+          /*$track.track( "addTrackEvent", {
             inPoint           : startWith.start,
             outPoint          : startWith.end,
             type              : trackType,
@@ -1436,6 +1452,7 @@
             popcorn           : $popcorn,
             _id               : lastEventId,
             editEvent         : function( event ) {
+console.log("edit event");
 
               //console.log("TrackEvent clicked");
               if ( !event.shiftKey ) {
@@ -1486,7 +1503,7 @@
 
               }
             }
-          });
+          });*/
 
 
           if ( !type ) {
@@ -2558,6 +2575,7 @@
     //  Plugin list event
     $pluginSelectList.delegate( "li", "click", function( event ) {
 
+console.log( "plugin clicked" );
       TrackEvents.addTrackEvent.call( this, event );
 
     });
