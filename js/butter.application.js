@@ -2139,6 +2139,7 @@
       wikipedia: {
         
         src: 'http://en.wikipedia.org/wiki/Mozilla',
+        lang: 'en',
 
       },
 
