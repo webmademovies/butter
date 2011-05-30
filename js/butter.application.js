@@ -392,6 +392,7 @@
 
 
         $uiStartScreen = $("#ui-start-screen"),
+        $helpBtn = $("#help-btn"),
         $uiApplicationMsg = $("#ui-application-error"),
 
         trackMouseState = "mouseup",
@@ -465,11 +466,6 @@
 
     //  Decorate UI buttons
     $("button,.ui-menu-controls").button();
-
-    //  Render accordion panels
-    $(".ui-accordion-panel").accordion({
-      fillSpace:  true
-    }).css("marginTop", "-1px");
 
     //  Render menusets ( create with: button + ul )
     $(".ui-menuset").each( function() {
@@ -552,21 +548,17 @@
         stageWidth
       );
 
-      var $drawers = $("#ui-accordion-tools h3.ui-accordion-header"),
-          $uiPanelPlugins = $("#ui-panel-plugins"),
+      var $uiPanelPlugins = $("#ui-panel-plugins"),
           outerWest = $(".outer-west").height(),
-          heightDiff = $("#ui-panel-video").height(),
-          headerHeight = $drawers.height();
+          heightDiff = $("#ui-panel-video").height();
 
       $uiPanelPlugins
         .height( outerWest - heightDiff )
           .css("margin-top", "5px");
 
-      $(".ui-accordion-panel div")
+      $(".ui-command-panel div")
         .height(
-          outerWest - heightDiff - (
-            headerHeight * ( $drawers.length + 2 )
-          )
+          outerWest - heightDiff - ( 50 )
         );
 
       //  Set Scrubber Height
@@ -1050,7 +1042,7 @@
 
             });
 
-            //  Trigger timeupdate to initialize the current time display
+            //  Trigger timeupdate to initialize the current time disp lay
             $popcorn.trigger( "timeupdate" );
 
 
@@ -2190,6 +2182,25 @@
       });
     });
 
+    $("#prj-details").click(function(){
+      $("#prjDiv").dialog({
+        modal: false,
+        title: "Project Details",
+        autoOpen: true,
+        width: 400,
+        height: 435,
+        buttons:
+          {
+            "Close": function() {
+              $(this).dialog( "close" );
+            }
+          }
+
+
+
+      });
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
@@ -2203,6 +2214,24 @@
       $li.data( "type",  type );
     });
 
+    //  Render Help menu
+    $("#help-btn").click(function(){
+      var asdf = document.createElement("div");
+      asdf.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
+                       "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
+      $(asdf).dialog({
+        modal: false,
+        title: "Help",
+        autoOpen: true,
+        width: 400,
+        height: 435,
+        buttons: {
+          "Close": function() {
+            $(this).dialog( "close" );
+          }
+        }
+      });
+    });
 
     //  Bind layout picker
     $layoutlist.delegate( "li", "click", function () {
