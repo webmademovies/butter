@@ -2187,7 +2187,7 @@
     });
 
     //  Render Help menu
-    $( "#help-btn" ).click( unction () {
+    $( "#help-btn" ).click( function () {
       var helpDiv = document.createElement( "div" );
       helpDiv.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
                           "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
