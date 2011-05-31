@@ -2207,8 +2207,8 @@
       });
     });
 
-    $("#prj-details").click(function(){
-      $("#prjDiv").dialog({
+    $( "#prj-details" ).click( function () {
+      $( "#prjDiv" ).dialog ( {
         modal: false,
         title: "Project Details",
         autoOpen: true,
@@ -2217,7 +2217,7 @@
         buttons:
           {
             "Close": function() {
-              $(this).dialog( "close" );
+              $( this ).dialog( "close" );
             }
           }
 
@@ -2240,11 +2240,11 @@
     });
 
     //  Render Help menu
-    $("#help-btn").click(function(){
-      var asdf = document.createElement("div");
-      asdf.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
-                       "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
-      $(asdf).dialog({
+    $( "#help-btn" ).click( function () {
+      var helpDiv = document.createElement( "div" );
+      helpDiv.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
+                          "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
+      $( helpDiv ).dialog ( {
         modal: false,
         title: "Help",
         autoOpen: true,
@@ -2252,7 +2252,7 @@
         height: 435,
         buttons: {
           "Close": function() {
-            $(this).dialog( "close" );
+            $( this ).dialog( "close" );
           }
         }
       });
