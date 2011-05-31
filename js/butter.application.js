@@ -2177,6 +2177,9 @@
     });
 
     $( "#prj-details" ).click( function () {
+      var tmpUrl = $ioVideoUrl.val(),
+          tmpTitle = $ioVideoTitle.val(),
+          tmpDescr = $ioVideoDesc.val();
       $( "#prjDiv" ).dialog ( {
         modal: true,
         title: "Project Details",
@@ -2186,6 +2189,13 @@
         buttons:
           {
             "Close": function() {
+              $ioVideoUrl.val( tmpUrl );
+              $ioVideoTitle.val( tmpTitle );
+              $ioVideoDesc.val( tmpDescr );
+              $( this ).dialog( "close" );
+            },
+            "Save": function() {
+              controls[ "save" ]();
               $( this ).dialog( "close" );
             }
           }
