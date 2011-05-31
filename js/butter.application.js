@@ -2187,11 +2187,11 @@
     });
 
     //  Render Help menu
-    $("#help-btn").click(function(){
-      var help_div = document.createElement("div");
-      help_div.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
-                       "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
-      $(help_div).dialog({
+    $( "#help-btn" ).click( unction () {
+      var helpDiv = document.createElement( "div" );
+      helpDiv.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
+                          "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
+      $( helpDiv ).dialog ( {
         modal: true,
         title: "Help",
         autoOpen: true,
@@ -2199,7 +2199,7 @@
         height: 435,
         buttons: {
           "Close": function() {
-            $(this).dialog( "close" );
+            $( this ).dialog( "close" );
           }
         }
       });
