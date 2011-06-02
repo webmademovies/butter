@@ -1449,7 +1449,16 @@
 
               //console.log("TrackEvent clicked");
               if ( !event.shiftKey ) {
-
+                $("#" + trackEvent.target).show();
+                $("#ui-track-div").append($("#" + trackEvent.target));
+                $("#ui-track-div").children().each(function(){
+                  console.log(this.id + " " + trackEvent.target);
+                  if(this.id != trackEvent.target){
+                    $("#" + this.id).hide();
+                  } else {
+                    $("#" + this.id).show();
+                  }
+                });
                 $editor.dialog({
                   autoOpen: false,
                   title: "Edit " + _( trackType ).capitalize(),

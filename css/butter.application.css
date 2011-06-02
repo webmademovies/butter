@@ -123,6 +123,16 @@ canvas{
 
 
 #ui-track-event-editor {
+float:right;
+height: 390px;
+overflow: auto;
+width:300px;
+}
+
+#ui-track-div {
+position: absolute;
+height: 394px;
+width:500px;
 }
 
 #ui-video-track-editor {
