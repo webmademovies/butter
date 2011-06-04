@@ -351,7 +351,10 @@
   $(function() {
 
     var $popcorn,
-        $trackLine = new TrackLiner( "ui-tracklines" ),
+        $trackLine = new TrackLiner({
+          element: "ui-tracklines",
+          dynamicTrackCreation: true
+        }),
         $doc = $(document),
         $win = $(global),
         $body = $("body"),
@@ -401,12 +404,13 @@
         lastSelectedEvent = null,
         activeTracks = {},
         trackStore,
+        addTrackEvent,
 
 
         // Modules
         TrackEditor,
         TrackMeta,
-        TrackEvents,
+        //TrackEvents,
         TrackExport,
 
         // Autosaving
@@ -418,16 +422,274 @@
 
         openDialogs = 0;
 
-    $trackLine.plugin({
-      setup: function( popcornTrack, eventElement, trackElement ) {
 
-        eventElement.style.left = popcornTrack.start / $popcorn.duration() * trackElement.offsetWidth + "px";
-        eventElement.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * trackElement.offsetWidth + "px";
+
+    var enforceTarget = function( plugin ) {
+
+      if ( !$("#" + plugin + "-container").length ) {
+
+        $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
+
+        $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
+
+      }
+    };
+
+    $trackLine.plugin( "butterapp", {
+      setup: function( track, options, event, ui ) {
+
+        enforceTarget( ui.draggable[ 0 ].id );
+
+        var offset = options.left + $( "#ui-tracks" ).scrollLeft() - $( "#ui-tracks" ).offset().left,
+            seconds = offset / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration(),
+            popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
+              // going to need manifest help here
+              start: seconds,
+              end: seconds + 2,
+              target: ui.draggable[ 0 ].id + "-container"
+            }).getTrackEvent( $popcorn.getLastTrackEventId() );
+
+        return { left: offset, id: popcornTrack._id };
       },
-      moved: function( popcornTrack, eventElement, trackElement ) {
+      moved: function( track, trackEventObj, event, ui ) {
 
-        popcornTrack.start = parseInt( eventElement.style.left, 10 ) / trackElement.offsetWidth * $popcorn.duration();
-        popcornTrack.end = ( parseInt( eventElement.style.left, 10 ) + eventElement.offsetWidth ) / trackElement.offsetWidth * $popcorn.duration();
+        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.event.id ),
+            manifest = popcornTrack._natives.manifest,
+            options = manifest.options,
+            trackType = popcornTrack._natives.type,
+            rebuiltEvent = {},
+            prop;
+
+        for ( prop in options ) {
+
+          if ( typeof options[ prop ] === "object" ) {
+
+            rebuiltEvent[ prop ] = popcornTrack[ prop ];
+          }
+        }
+
+        rebuiltEvent.start = ui.position.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
+        rebuiltEvent.end = ( ui.position.left + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
+
+        $popcorn.removeTrackEvent( popcornTrack._id );
+
+        $popcorn[ trackType ]( rebuiltEvent );
+
+        popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+        trackEventObj.event.id = popcornTrack._id;
+      },
+      dblclick: function( trackObject, trackEvent, event, ui ) {
+console.log( trackObject );
+        /*var popcornTrack,
+            trackType,
+            manifestElems = {},
+            popcornTrackEvents = $popcorn.getTrackEvents();
+
+        for ( var i = 0, tracksLength = popcornTrackEvents.length; i < tracksLength; i++ ) {
+
+          if ( popcornTrackEvents[ i ]._id === eventObject.id ) {
+
+            popcornTrack = popcornTrackEvents[ i ];
+
+            trackType = popcornTrack._natives.type;
+
+            var manifest    = popcornTrack._natives.manifest,
+                options     = manifest.options,
+                label,
+                prop;
+
+            $editor.dialog({
+              autoOpen: false,
+              title: "Edit " + _( trackType ).capitalize(),
+              buttons: {
+
+                "Delete": function() {
+
+                  $doc.trigger( "applicationNotice", {
+
+                    message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
+                              "This action is permanent and cannot be undone.", 
+
+                    callback: function () {
+
+                      //  Remove the track when user selects "ok"
+                      //TrackEvents.destroyTrackEvent( $track, $popcorn, lastEventId, trackType );
+                      $popcorn.removeTrackEvent( popcornTrack._id );
+                      $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
+                      $editor.dialog("close");
+                    }
+                  });
+                },
+
+                "Cancel": function() {
+
+                  $editor.dialog("close");
+                },
+                "OK" : function() {
+
+                  var rebuiltEvent = {},
+                      _val;
+
+                  $popcorn.removeTrackEvent( popcornTrack._id );
+                  $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
+
+                  for( prop in manifest.options ) {
+                    if ( typeof manifest.options[ prop ] === "object" ) {
+
+                      _val = manifestElems[ prop ].val();
+
+                      rebuiltEvent[ prop ] = _val
+
+                      if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
+                        rebuiltEvent[ prop ] = +_val;
+                      }
+                    }
+                  }
+
+
+                  $popcorn[ trackType ]( rebuiltEvent );
+                  eventObject = { id: $popcorn.getLastTrackEventId() };
+                  eventElement = $trackLine.getTrack( trackElement.id ).createTrackEvent( eventObject ).element;
+
+                  $editor.dialog("close");
+                }, //function() {
+
+                  //TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
+
+                  //$(this).dialog("close");
+                //}
+
+                //,
+                "Apply" : function() {
+
+                  var rebuiltEvent = {},
+                      _val;
+
+                  $popcorn.removeTrackEvent( popcornTrack._id );
+                  $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
+
+                  for( prop in manifest.options ) {
+                    if ( typeof manifest.options[ prop ] === "object" ) {
+
+                      _val = manifestElems[ prop ].val();
+
+                      rebuiltEvent[ prop ] = _val
+
+                      if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
+                        rebuiltEvent[ prop ] = +_val;
+                      }
+                    }
+                  }
+
+                  $popcorn[ trackType ]( rebuiltEvent );
+                  eventObject = { id: $popcorn.getLastTrackEventId() };
+                  eventElement = $trackLine.getTrack( trackElement.id ).createTrackEvent( eventObject ).element;
+                  $editor.dialog("close");
+                }
+                //  TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
+                //}
+              }
+            });
+
+            // draw track form in dialog
+            $("#ui-track-event-editor").children("*").remove();
+
+            //if ( !selectedEvent.manifestElems ) {
+            //  selectedEvent.manifestElems = {};
+            //}
+
+            //if ( !selectedEvent.previousValues ) {
+            //  selectedEvent.previousValues = {};
+            //}
+
+            for ( prop in options ) {
+
+              if ( typeof options[ prop ] === "object" ) {
+
+                var opt = options[ prop ],
+                    elemType = opt.elem,
+                    elemLabel = opt.label,
+                    elem;
+
+                elem = $( "<" + elemType + "/>", {
+                          className: "text"
+                        });
+
+
+                manifestElems[ prop ] = elem;
+
+               //console.log(lastSelectedEvent);
+
+
+                //if ( _.isNull(lastSelectedEvent) || lastSelectedEvent !== selectedEvent ) {
+                //  selectedEvent.previousValues[ prop ] = selectedEvent.popcornEvent[ prop ];
+                //}
+
+                label = $("<label/>").attr("for", elemLabel).text(elemLabel);
+
+
+                if ( elemType === "input" ) {
+
+                  var rounded = popcornTrack[ prop ];
+
+                  //  Round displayed times to nearest quarter of a second
+                  if ( _.isNumber( +rounded ) && [ "start", "end" ].indexOf( prop ) > -1 ) {
+
+                    rounded = _( +rounded ).fourth();
+                  }
+
+                  elem.val( rounded );
+
+                }
+
+                if ( elemType === "select" ) {
+
+                  _.each( opt.options, function( type ) {
+
+                    $( "<option/>", {
+
+                      value: type,
+                      text: _( type ).capitalize()
+
+                    }).appendTo( elem );
+
+                  });
+
+                }
+
+                elem.appendTo(label);
+                label.appendTo( "#ui-track-event-editor" );
+
+              }
+            }
+
+            $editor.dialog("open");
+
+            return;
+          }
+        }
+
+
+
+          //TrackEvents.drawTrackEvents.call( this );
+
+        //} else {
+
+          //  If the shift key was held down when the track event was clicked.
+
+
+         // $doc.trigger( "applicationNotice", {
+
+            //message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
+            //          "This action is permanent and cannot be undone.", 
+
+            //callback: function () {
+
+              //  Remove the track when user selects "ok"
+              //TrackEvents.destroyTrackEvent( $track, $popcorn, lastEventId, trackType );
+            //}
+          //});
+        //}*/
       }
     });
     
@@ -669,7 +931,7 @@
 
                 var options = _.extend( {}, { id: key }, data );
 
-                TrackEvents.addTrackEvent.call( options, options );
+                addTrackEvent.call( options, options, $trackLine.createTrack() );
 
               });
 
@@ -1265,12 +1527,12 @@
     //   TrackEvents Module - define
 
 
-    TrackEvents = ( function(global) {
+    //TrackEvents = ( function(global) {
 
 
-      return {
+      //return {
 
-        getTrackEventById: function( id ) {
+        /*getTrackEventById: function( id ) {
 
           if ( !$popcorn.data ) {
             return {};
@@ -1290,9 +1552,9 @@
 
           return ret;
 
-        },
+        },*/
 
-        destroyTrackEvent: function( $track, $popcorn, id, trackType ) {
+        /*destroyTrackEvent: function( $track, $popcorn, id, trackType ) {
 
           //  Remove the track event from the tracks ui cache
           $track.track( "killTrackEvent", {
@@ -1312,9 +1574,9 @@
             });
           }
 
-        },
+        },*/
 
-        enforceTarget: function( plugin ) {
+        /*enforceTarget: function( plugin ) {
 
           if ( !$("#" + plugin + "-container").length ) {
 
@@ -1323,11 +1585,30 @@
             $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
 
           }
-        },
+        },*/
 
-        addTrackEvent: function( type ) {
-console.log("calling addTrackEvent");
+        addTrackEvent = function( type, trackLine ) {
+          var getTrackEventById = function( id ) {
 
+            if ( !$popcorn.data ) {
+              return {};
+            }
+
+            var events = Popcorn.getTrackEvents( $popcorn ),
+                ret;
+
+            _.each( events, function( data, key ) {
+
+              if ( data._id === id ) {
+                ret = data;
+                return;
+              }
+
+            });
+
+            return ret;
+
+          };
           if ( !$popcorn || !$popcorn.data ) {
 
             $doc.trigger( "applicationError", {
@@ -1338,7 +1619,7 @@ console.log("calling addTrackEvent");
             return;
           }
 
-          TrackEvents.enforceTarget( this.id );
+          enforceTarget( this.id );
 
           var $track, lastEventId, trackEvents, trackEvent, settings = {},
               trackType = this.id,
@@ -1390,7 +1671,6 @@ console.log("calling addTrackEvent");
           //  Reset startWith.id, allow Popcorn to create unique IDs
           startWith.id = false;
 
-console.log("creating popcorn track of type " + trackType);
           //  Call the plugin to create an empty track event
           $popcorn[ trackType ]( startWith );
 
@@ -1404,14 +1684,13 @@ console.log("creating popcorn track of type " + trackType);
 
 
           //  Capture this track event
-          trackEvent = TrackEvents.getTrackEventById(lastEventId);
+          trackEvent = getTrackEventById(lastEventId);
 
-console.log( trackEvent );
-          $trackLine.createTrack().createTrackEvent( trackEvent );
+          //trackLine.createTrackEvent( trackEvent );
           //  Check for existing tracks of this type
           //  If no existing tracks, create them
           //if ( !activeTracks[ trackType ] ) {
-console.log("creating track");
+
             //  Draw a new track placeholder
             /*$track = $("<div/>", {
 
@@ -1516,9 +1795,9 @@ console.log("edit event");
           $doc.trigger( type + "Complete" );
 
 
-        },
+        };
 
-        drawTrackEvents: function() {
+        /*drawTrackEvents: function() {
 
 
 
@@ -1635,10 +1914,10 @@ console.log("edit event");
 
 
           $editor.dialog("open");
-        },
+        },*/
 
 
-        editEventApply: function( $track, $p, id, trackType ) {
+        /*editEventApply: function( $track, $p, id, trackType ) {
 
           var popcornEvent = selectedEvent.popcornEvent,
               manifest = popcornEvent._natives.manifest,
@@ -1724,16 +2003,16 @@ console.log("edit event");
           selectedEvent.outPoint = popcornEvent.end;
           selectedEvent.parent._draw();
           $editor.dialog("close");
-        },
+        },*/
 
 
-        editEventOK: function() {
+        /*editEventOK: function() {
           TrackEvents.editEventApply();
           $editor.dialog("close");
-        }
-      };
+        }*/
+      //};
 
-    })(global);
+    //})(global);
 
     //   TrackExport Module
 
@@ -2156,10 +2435,14 @@ console.log("edit event");
 
           id: plugin.type,
           className: "span-4 select-li clickable",
-          html: "<h3><img class='icon' src='img/" + plugin.type.split(/\s/)[0].toLowerCase() + ".png'> " + _( plugin.type ).capitalize() + "</h3>"
+          html: "<h3><img class='icon' src='img/" + plugin.type.split(/\s/)[0].toLowerCase() + ".png'> " + _( plugin.type ).capitalize() + "</h3>",
+          "data-trackliner-type": "butterapp"
 
-        }).appendTo( "#ui-plugin-select-list" );
+        }).appendTo( "#ui-plugin-select-list" )
+        .draggable({helper: "clone", appendTo: "body", zIndex: 9001, revert: true, revertDuration: 0, stop: function( event, ui ) {
 
+          //addTrackEvent.call( this, event, $trackLine.createTrack() );
+        }});
       }
 
     });
@@ -2573,12 +2856,13 @@ console.log("edit event");
 
 
     //  Plugin list event
-    $pluginSelectList.delegate( "li", "click", function( event ) {
+    /*$pluginSelectList.delegate( "li", "click", function( event ) {
 
-console.log( "plugin clicked" );
-      TrackEvents.addTrackEvent.call( this, event );
+console.log( "plugin clicked, does nothing now" );
+console.log( event );
+      //TrackEvents.addTrackEvent.call( this, event );
 
-    });
+    });*/
 
 
     //  User video list event
