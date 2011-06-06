@@ -404,7 +404,6 @@
         lastSelectedEvent = null,
         activeTracks = {},
         trackStore,
-        addTrackEvent,
 
 
         // Modules
@@ -433,6 +432,11 @@
         $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
 
       }
+    };
+    
+    var editTrackEvent = function( track, newOptions ) {
+    
+      
     };
 
     $trackLine.plugin( "butterapp", {
@@ -478,218 +482,168 @@
         popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
         trackEventObj.event.id = popcornTrack._id;
       },
-      dblclick: function( trackObject, trackEvent, event, ui ) {
-console.log( trackObject );
-        /*var popcornTrack,
-            trackType,
+      dblclick: function( track, trackEventObj, event, ui ) {
+
+      
+      
+        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.event.id ),
+            manifest = popcornTrack._natives.manifest,
+            options = manifest.options,
+            trackType = popcornTrack._natives.type,
+            rebuiltEvent = {},
             manifestElems = {},
-            popcornTrackEvents = $popcorn.getTrackEvents();
+            label,
+            prop;
 
-        for ( var i = 0, tracksLength = popcornTrackEvents.length; i < tracksLength; i++ ) {
+        $editor.dialog({
+          autoOpen: false,
+          title: "Edit " + _( trackType ).capitalize(),
+          buttons: {
 
-          if ( popcornTrackEvents[ i ]._id === eventObject.id ) {
+            "Delete": function() {
 
-            popcornTrack = popcornTrackEvents[ i ];
+              $doc.trigger( "applicationNotice", {
 
-            trackType = popcornTrack._natives.type;
+                message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
+                          "This action is permanent and cannot be undone.", 
 
-            var manifest    = popcornTrack._natives.manifest,
-                options     = manifest.options,
-                label,
-                prop;
+                callback: function () {
 
-            $editor.dialog({
-              autoOpen: false,
-              title: "Edit " + _( trackType ).capitalize(),
-              buttons: {
-
-                "Delete": function() {
-
-                  $doc.trigger( "applicationNotice", {
-
-                    message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
-                              "This action is permanent and cannot be undone.", 
-
-                    callback: function () {
-
-                      //  Remove the track when user selects "ok"
-                      //TrackEvents.destroyTrackEvent( $track, $popcorn, lastEventId, trackType );
-                      $popcorn.removeTrackEvent( popcornTrack._id );
-                      $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
-                      $editor.dialog("close");
-                    }
-                  });
-                },
-
-                "Cancel": function() {
-
-                  $editor.dialog("close");
-                },
-                "OK" : function() {
-
-                  var rebuiltEvent = {},
-                      _val;
-
+                  //  Remove the track when user selects "ok"
                   $popcorn.removeTrackEvent( popcornTrack._id );
-                  $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
-
-                  for( prop in manifest.options ) {
-                    if ( typeof manifest.options[ prop ] === "object" ) {
-
-                      _val = manifestElems[ prop ].val();
-
-                      rebuiltEvent[ prop ] = _val
-
-                      if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
-                        rebuiltEvent[ prop ] = +_val;
-                      }
-                    }
-                  }
-
-
-                  $popcorn[ trackType ]( rebuiltEvent );
-                  eventObject = { id: $popcorn.getLastTrackEventId() };
-                  eventElement = $trackLine.getTrack( trackElement.id ).createTrackEvent( eventObject ).element;
-
-                  $editor.dialog("close");
-                }, //function() {
-
-                  //TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
-
-                  //$(this).dialog("close");
-                //}
-
-                //,
-                "Apply" : function() {
-
-                  var rebuiltEvent = {},
-                      _val;
-
-                  $popcorn.removeTrackEvent( popcornTrack._id );
-                  $trackLine.getTrack( trackElement.id ).removeTrackEvent( eventElement.id );
-
-                  for( prop in manifest.options ) {
-                    if ( typeof manifest.options[ prop ] === "object" ) {
-
-                      _val = manifestElems[ prop ].val();
-
-                      rebuiltEvent[ prop ] = _val
-
-                      if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
-                        rebuiltEvent[ prop ] = +_val;
-                      }
-                    }
-                  }
-
-                  $popcorn[ trackType ]( rebuiltEvent );
-                  eventObject = { id: $popcorn.getLastTrackEventId() };
-                  eventElement = $trackLine.getTrack( trackElement.id ).createTrackEvent( eventObject ).element;
+                  track.removeTrackEvent( trackEventObj.element.id );
                   $editor.dialog("close");
                 }
-                //  TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
-                //}
-              }
-            });
+              });
+            },
 
-            // draw track form in dialog
-            $("#ui-track-event-editor").children("*").remove();
+            "Cancel": function() {
 
-            //if ( !selectedEvent.manifestElems ) {
-            //  selectedEvent.manifestElems = {};
-            //}
+              $editor.dialog("close");
+            },
+            "OK" : function() {
 
-            //if ( !selectedEvent.previousValues ) {
-            //  selectedEvent.previousValues = {};
-            //}
+              var rebuiltEvent = {},
+                  _val;
 
-            for ( prop in options ) {
+              $popcorn.removeTrackEvent( popcornTrack._id );
+              var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
 
-              if ( typeof options[ prop ] === "object" ) {
+              for( prop in manifest.options ) {
+                if ( typeof manifest.options[ prop ] === "object" ) {
 
-                var opt = options[ prop ],
-                    elemType = opt.elem,
-                    elemLabel = opt.label,
-                    elem;
+                  _val = manifestElems[ prop ].val();
 
-                elem = $( "<" + elemType + "/>", {
-                          className: "text"
-                        });
+                  rebuiltEvent[ prop ] = _val
 
-
-                manifestElems[ prop ] = elem;
-
-               //console.log(lastSelectedEvent);
-
-
-                //if ( _.isNull(lastSelectedEvent) || lastSelectedEvent !== selectedEvent ) {
-                //  selectedEvent.previousValues[ prop ] = selectedEvent.popcornEvent[ prop ];
-                //}
-
-                label = $("<label/>").attr("for", elemLabel).text(elemLabel);
-
-
-                if ( elemType === "input" ) {
-
-                  var rounded = popcornTrack[ prop ];
-
-                  //  Round displayed times to nearest quarter of a second
-                  if ( _.isNumber( +rounded ) && [ "start", "end" ].indexOf( prop ) > -1 ) {
-
-                    rounded = _( +rounded ).fourth();
+                  if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
+                    rebuiltEvent[ prop ] = +_val;
                   }
-
-                  elem.val( rounded );
-
                 }
-
-                if ( elemType === "select" ) {
-
-                  _.each( opt.options, function( type ) {
-
-                    $( "<option/>", {
-
-                      value: type,
-                      text: _( type ).capitalize()
-
-                    }).appendTo( elem );
-
-                  });
-
-                }
-
-                elem.appendTo(label);
-                label.appendTo( "#ui-track-event-editor" );
-
               }
+
+              $popcorn[ trackType ]( rebuiltEvent );
+              popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+              removedTrack.event.id = popcornTrack._id;
+              track.addTrackEvent( removedTrack );
+              
+              removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
+              removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
+
+              $editor.dialog("close");
+            },
+            "Apply" : function() {
+
+              var rebuiltEvent = {},
+                  _val;
+
+              $popcorn.removeTrackEvent( popcornTrack._id );
+              var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
+
+              for( prop in manifest.options ) {
+                if ( typeof manifest.options[ prop ] === "object" ) {
+
+                  _val = manifestElems[ prop ].val();
+
+                  rebuiltEvent[ prop ] = _val
+
+                  if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
+                    rebuiltEvent[ prop ] = +_val;
+                  }
+                }
+              }
+
+              $popcorn[ trackType ]( rebuiltEvent );
+              popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+              removedTrack.event.id = popcornTrack._id;
+              track.addTrackEvent( removedTrack );
+              
+              removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
+              removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
+
+            }
+          }
+        });
+
+        // draw track form in dialog
+        $("#ui-track-event-editor").children("*").remove();
+
+        for ( prop in options ) {
+
+          if ( typeof options[ prop ] === "object" ) {
+
+            var opt = options[ prop ],
+                elemType = opt.elem,
+                elemLabel = opt.label,
+                elem;
+
+            elem = $( "<" + elemType + "/>", {
+                      className: "text"
+                    });
+
+
+            manifestElems[ prop ] = elem;
+            
+            label = $("<label/>").attr("for", elemLabel).text(elemLabel);
+
+
+            if ( elemType === "input" ) {
+
+              var rounded = popcornTrack[ prop ];
+
+              //  Round displayed times to nearest quarter of a second
+              if ( _.isNumber( +rounded ) && [ "start", "end" ].indexOf( prop ) > -1 ) {
+
+                rounded = _( +rounded ).fourth();
+              }
+
+              elem.val( rounded );
+
             }
 
-            $editor.dialog("open");
+            if ( elemType === "select" ) {
 
-            return;
+              _.each( opt.options, function( type ) {
+
+                $( "<option/>", {
+
+                  value: type,
+                  text: _( type ).capitalize()
+
+                }).appendTo( elem );
+
+              });
+
+            }
+
+            elem.appendTo(label);
+            label.appendTo( "#ui-track-event-editor" );
+
           }
         }
 
+        $editor.dialog("open");
 
-
-          //TrackEvents.drawTrackEvents.call( this );
-
-        //} else {
-
-          //  If the shift key was held down when the track event was clicked.
-
-
-         // $doc.trigger( "applicationNotice", {
-
-            //message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
-            //          "This action is permanent and cannot be undone.", 
-
-            //callback: function () {
-
-              //  Remove the track when user selects "ok"
-              //TrackEvents.destroyTrackEvent( $track, $popcorn, lastEventId, trackType );
-            //}
-          //});
-        //}*/
       }
     });
     
@@ -931,7 +885,8 @@ console.log( trackObject );
 
                 var options = _.extend( {}, { id: key }, data );
 
-                addTrackEvent.call( options, options, $trackLine.createTrack() );
+                // need to reactivate this
+                //addTrackEvent.call( options, options, $trackLine.createTrack() );
 
               });
 
@@ -1523,497 +1478,6 @@ console.log( trackObject );
 
     })(global);
 
-
-    //   TrackEvents Module - define
-
-
-    //TrackEvents = ( function(global) {
-
-
-      //return {
-
-        /*getTrackEventById: function( id ) {
-
-          if ( !$popcorn.data ) {
-            return {};
-          }
-
-          var events = Popcorn.getTrackEvents( $popcorn ),
-              ret;
-
-          _.each( events, function( data, key ) {
-
-            if ( data._id === id ) {
-              ret = data;
-              return;
-            }
-
-          });
-
-          return ret;
-
-        },*/
-
-        /*destroyTrackEvent: function( $track, $popcorn, id, trackType ) {
-
-          //  Remove the track event from the tracks ui cache
-          $track.track( "killTrackEvent", {
-            _id: id
-          });
-
-
-          //  Remove the track event from Popcorn cache
-          $popcorn.removeTrackEvent( id );
-
-
-          //  Fire event if track removed successfully
-          if ( $popcorn.data.history.indexOf( id ) === -1 ) {
-            $doc.trigger( "removeTrackComplete", {
-              type: trackType,
-              supress: true
-            });
-          }
-
-        },*/
-
-        /*enforceTarget: function( plugin ) {
-
-          if ( !$("#" + plugin + "-container").length ) {
-
-            $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
-
-            $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
-
-          }
-        },*/
-
-        addTrackEvent = function( type, trackLine ) {
-          var getTrackEventById = function( id ) {
-
-            if ( !$popcorn.data ) {
-              return {};
-            }
-
-            var events = Popcorn.getTrackEvents( $popcorn ),
-                ret;
-
-            _.each( events, function( data, key ) {
-
-              if ( data._id === id ) {
-                ret = data;
-                return;
-              }
-
-            });
-
-            return ret;
-
-          };
-          if ( !$popcorn || !$popcorn.data ) {
-
-            $doc.trigger( "applicationError", {
-              type: "No Video Loaded",
-              message: "I cannot add a Track Event - there is no movie loaded."
-            });
-
-            return;
-          }
-
-          enforceTarget( this.id );
-
-          var $track, lastEventId, trackEvents, trackEvent, settings = {},
-              trackType = this.id,
-              trackManifest = Popcorn.manifest[ trackType ],
-
-              currentPlayHeadTime = _( $popcorn.video.currentTime ).fourth(),
-              startWith = {
-
-                //  Drop new track event at playhead
-                start: currentPlayHeadTime,
-
-                //
-                end: currentPlayHeadTime + 2
-              };
-
-
-          //  GET PLAYHEAD POSITION AS SECONDS
-
-          arguments.length && ( settings = arguments[0] );// && _;
-
-
-          //  In case settings is an event object
-          if ( settings.currentTarget ) {
-            settings  = {};
-          }
-
-          //  Compile a starting point
-          _.extend( startWith, settings, {
-
-            target: this.id + "-container"
-
-          });
-
-          //  Explicitly augment the starting object with all manifest props
-          _.forEach( trackManifest.options, function( obj, key ) {
-            if ( !( key in startWith ) ) {
-              // -------------------------- !! Super gross hack to see if
-              // -------------------------- !! the key labels an event handler
-              if ( key.substr(0,2) === "on" && key.charAt(2) === key.charAt(2).toUpperCase() ) {
-                startWith[ key ] = function () {};
-              }
-              else {
-                startWith[ key ] = "";
-              }
-            }
-          });
-
-
-          //  Reset startWith.id, allow Popcorn to create unique IDs
-          startWith.id = false;
-
-          //  Call the plugin to create an empty track event
-          $popcorn[ trackType ]( startWith );
-
-
-          //  Obtain the last registered track event id
-          lastEventId = $popcorn.getLastTrackEventId();
-
-
-          //  Obtain all current track events
-          trackEvents = $popcorn.getTrackEvents();
-
-
-          //  Capture this track event
-          trackEvent = getTrackEventById(lastEventId);
-
-          //trackLine.createTrackEvent( trackEvent );
-          //  Check for existing tracks of this type
-          //  If no existing tracks, create them
-          //if ( !activeTracks[ trackType ] ) {
-
-            //  Draw a new track placeholder
-            /*$track = $("<div/>", {
-
-              "title": trackType,
-              className: "span-21 last track track" + _.size( activeTracks )
-
-            }).insertAfter( "#ui-tracks-time" );*/ //"#ui-tracks"
-
-            //$track.width( TrackEditor.timeLineWidth );
-
-            //  Convert the placeholder into a track, with a track event
-            /*$track.track({
-              target: $("#video"),
-              duration: $popcorn.video.duration
-            });*/
-
-
-            //$track.prepend('<span class="large track-label large" >' + _( trackType ).capitalize() + "</span>");
-
-            //  Cache the track widget
-            //activeTracks[ trackType ] = $track;
-
-          //} else {
-
-            //  If a track of this type exists
-            //$track = activeTracks[ trackType ];
-
-          //}
-
-          //  TODO: when a track of this type already exists...
-          //  ensure we need to actually make "track" into something
-
-          /*$track.track( "addTrackEvent", {
-            inPoint           : startWith.start,
-            outPoint          : startWith.end,
-            type              : trackType,
-            popcornEvent      : trackEvent,
-            popcorn           : $popcorn,
-            _id               : lastEventId,
-            editEvent         : function( event ) {
-console.log("edit event");
-
-              //console.log("TrackEvent clicked");
-              if ( !event.shiftKey ) {
-
-                $editor.dialog({
-                  autoOpen: false,
-                  title: "Edit " + _( trackType ).capitalize(),
-                  buttons: {
-
-                    //  TODO
-                    //"Delete": editEventDelete,
-
-                    "Cancel": TrackEvents.editEventCancel,
-                    "OK"    : function() {
-
-                      TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
-
-                      $(this).dialog("close");
-                    }
-
-                    //,
-                    //"Apply" : function() {
-                    //  TrackEvents.editEventApply.call( trackEvent, $track, $popcorn, lastEventId, trackType );
-                    //}
-                  }
-                });
-
-                TrackEvents.drawTrackEvents.call( this );
-
-              } else {
-
-                //  If the shift key was held down when the track event was clicked.
-
-
-                $doc.trigger( "applicationNotice", {
-
-                  message: 'Are you sure you want to remove this Track Event? <br><br> <hr class="space">' +
-                            "This action is permanent and cannot be undone.", 
-
-                  callback: function () {
-
-                    //  Remove the track when user selects "ok"
-                    TrackEvents.destroyTrackEvent( $track, $popcorn, lastEventId, trackType );
-
-
-                  }
-                });
-
-              }
-            }
-          });*/
-
-
-          if ( !type ) {
-
-            $doc.trigger( "addTrackComplete" );
-            return;
-          }
-
-
-          $doc.trigger( type + "Complete" );
-
-
-        };
-
-        /*drawTrackEvents: function() {
-
-
-
-          // THIS FUNCTION IS NOT ACTUALLY EDITTING, BUT CREATING THE EDITOR DIALOG
-
-
-          try{
-
-            $editor.dialog("close");
-
-          } catch( e ) {
-            // supress
-          }
-
-          // `this` will actually refer to the context set when the function is called.
-          selectedEvent = this;
-
-          var manifest    = selectedEvent.popcornEvent._natives.manifest,
-              //about       = manifest.about,
-              //aboutTab    = $editor.find(".about"),
-              options     = manifest.options,
-              //optionsTab  = $editor.find(".options"),
-
-              //input,
-              label,
-              prop;
-
-          //console.log(manifest);
-
-          //aboutTab.children("*").remove(); // Rick, not sure if this is good practice here. Any ideas?
-
-          //$("<h3/>").text(about.name).appendTo(aboutTab);
-          //$("<p/>").html("<label>Version:</label> "+about.version).appendTo(aboutTab);
-          //$("<p/>").html("<label>Author:</label> "+about.author).appendTo(aboutTab);
-          //$("<a/>").html('<label>Website:</label> <a href="'+about.website+'">'+about.website+'</a>').appendTo(aboutTab);
-
-          //optionsTab.children("*").remove(); // Rick, not sure if this is good practice here. Any ideas?
-
-          //console.log(manifest);
-
-
-          $("#ui-track-event-editor").children("*").remove();
-
-          if ( !selectedEvent.manifestElems ) {
-            selectedEvent.manifestElems = {};
-          }
-
-          if ( !selectedEvent.previousValues ) {
-            selectedEvent.previousValues = {};
-          }
-
-          for ( prop in options ) {
-
-            if ( typeof options[ prop ] === "object" ) {
-
-              var opt = options[ prop ],
-                  elemType = opt.elem,
-                  elemLabel = opt.label,
-                  elem;
-
-              elem = $( "<" + elemType + "/>", {
-                        className: "text"
-                      });
-
-
-              selectedEvent.manifestElems[ prop ] = elem;
-
-             //console.log(lastSelectedEvent);
-
-
-              if ( _.isNull(lastSelectedEvent) || lastSelectedEvent !== selectedEvent ) {
-                selectedEvent.previousValues[ prop ] = selectedEvent.popcornEvent[ prop ];
-              }
-
-              label = $("<label/>").attr("for", elemLabel).text(elemLabel);
-
-
-              if ( elemType === "input" ) {
-
-                var rounded = selectedEvent.popcornEvent[ prop ];
-
-                //  Round displayed times to nearest quarter of a second
-                if ( _.isNumber( +rounded ) && [ "start", "end" ].indexOf( prop ) > -1 ) {
-
-                  rounded = _( +rounded ).fourth();
-                }
-
-                elem.val( rounded );
-
-              }
-
-              if ( elemType === "select" ) {
-
-                _.each( opt.options, function( type ) {
-
-                  $( "<option/>", {
-
-                    value: type,
-                    text: _( type ).capitalize()
-
-                  }).appendTo( elem );
-
-                });
-
-              }
-
-              elem.appendTo(label);
-              label.appendTo( "#ui-track-event-editor" );
-
-            }
-          }
-
-          lastSelectedEvent = this;
-
-
-          $editor.dialog("open");
-        },*/
-
-
-        /*editEventApply: function( $track, $p, id, trackType ) {
-
-          var popcornEvent = selectedEvent.popcornEvent,
-              manifest = popcornEvent._natives.manifest,
-              rebuiltEvent = {},
-              prop, refEvent, _val;
-
-          for( prop in manifest.options ) {
-            if ( typeof manifest.options[ prop ] === "object" ) {
-
-              _val = selectedEvent.manifestElems[ prop ].val();
-
-              popcornEvent[ prop ] = _val;
-
-              if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
-                popcornEvent[ prop ] = +_val;
-              }
-            }
-          }
-
-          selectedEvent.inPoint = popcornEvent.start;
-          selectedEvent.outPoint = popcornEvent.end;
-
-          //  Save a ref to the latest track event data
-          //  selectedEvent.popcornEvent
-
-          refEvent = selectedEvent.popcornEvent;
-
-          _.each( refEvent, function( eventProp, eventKey ) {
-            if ( eventKey.indexOf("_") !== 0 && !!eventProp ) {
-              rebuiltEvent[ eventKey ] = eventProp;
-            }
-          });
-
-
-          //  Re-assign id back to rebuiltEvent
-          _.extend( rebuiltEvent, {
-
-            id: trackType
-
-          });
-
-
-          //TrackEvents.destroyTrackEvent( $track, $p, id, trackType )
-          $track.track( "killTrackEvent", {
-            _id: id
-          });
-          //  Remove the track event from Popcorn cache
-          $popcorn.removeTrackEvent( id );
-
-
-          $( refEvent._container ).remove();
-
-
-          TrackEvents.addTrackEvent.call( rebuiltEvent, rebuiltEvent );
-
-
-          //  If the scrubber is currently over the track event being editted
-          //  "pre fire" the plugin start to update the preview pane display
-          if ( TrackEditor.isScrubberWithin( refEvent ) ) {
-
-            var lastId = $popcorn.getLastTrackEventId(),
-                newTrackEvent = TrackEvents.getTrackEventById( lastId );
-
-            newTrackEvent._natives.start( null, newTrackEvent );
-
-          }
-
-          $doc.trigger( "videoEditComplete" );
-
-        },
-
-
-        editEventCancel: function() {
-          var popcornEvent = selectedEvent.popcornEvent,
-              prop;
-
-          for( prop in selectedEvent.previousValues ) {
-            if ( prop ) {
-              popcornEvent[ prop ] = selectedEvent.previousValues[ prop ];
-            }
-          }
-          selectedEvent.inPoint = popcornEvent.start;
-          selectedEvent.outPoint = popcornEvent.end;
-          selectedEvent.parent._draw();
-          $editor.dialog("close");
-        },*/
-
-
-        /*editEventOK: function() {
-          TrackEvents.editEventApply();
-          $editor.dialog("close");
-        }*/
-      //};
-
-    //})(global);
-
     //   TrackExport Module
 
     TrackExport = (function (global) {
@@ -2439,10 +1903,7 @@ console.log("edit event");
           "data-trackliner-type": "butterapp"
 
         }).appendTo( "#ui-plugin-select-list" )
-        .draggable({helper: "clone", appendTo: "body", zIndex: 9001, revert: true, revertDuration: 0, stop: function( event, ui ) {
-
-          //addTrackEvent.call( this, event, $trackLine.createTrack() );
-        }});
+        .draggable({ helper: "clone", appendTo: "body", zIndex: 9001, revert: true, revertDuration: 0 });
       }
 
     });
@@ -2853,17 +2314,6 @@ console.log("edit event");
     // ^^^^^^^^^^^^^^^^^^^ THIS IS THE WORST CODE EVER.
 
     $("#ui-panel-preview .sortable").sortable();
-
-
-    //  Plugin list event
-    /*$pluginSelectList.delegate( "li", "click", function( event ) {
-
-console.log( "plugin clicked, does nothing now" );
-console.log( event );
-      //TrackEvents.addTrackEvent.call( this, event );
-
-    });*/
-
 
     //  User video list event
     $("#ui-start-screen-list, #ui-user-videos").delegate( "li", "click", function( event, options ) {
