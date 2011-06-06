@@ -457,7 +457,7 @@
       },
       moved: function( track, trackEventObj, event, ui ) {
 console.log(trackEventObj);
-        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.options.id ),
+        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
             manifest = popcornTrack._natives.manifest,
             options = manifest.options,
             trackType = popcornTrack._natives.type,
@@ -480,13 +480,13 @@ console.log(trackEventObj);
         $popcorn[ trackType ]( rebuiltEvent );
 
         popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-        trackEventObj.event.id = popcornTrack._id;
+        trackEventObj.pluginOptions.id = popcornTrack._id;
       },
       dblclick: function( track, trackEventObj, event, ui ) {
 
       
       
-        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.event.id ),
+        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
             manifest = popcornTrack._natives.manifest,
             options = manifest.options,
             trackType = popcornTrack._natives.type,
@@ -544,7 +544,7 @@ console.log(trackEventObj);
 
               $popcorn[ trackType ]( rebuiltEvent );
               popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-              removedTrack.event.id = popcornTrack._id;
+              removedTrack.pluginOptions.id = popcornTrack._id;
               track.addTrackEvent( removedTrack );
               
               removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
@@ -575,7 +575,7 @@ console.log(trackEventObj);
 
               $popcorn[ trackType ]( rebuiltEvent );
               popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-              removedTrack.event.id = popcornTrack._id;
+              removedTrack.pluginOptions.id = popcornTrack._id;
               track.addTrackEvent( removedTrack );
               
               removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";

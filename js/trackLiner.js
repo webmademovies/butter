@@ -205,6 +205,7 @@
             };
 
             trackEvent.options = inputOptions;
+            trackEvent.pluginOptions = trackOptions;
             trackEvent.element = trackOptions.element || this.createEventElement ( trackOptions );
             trackEvent.element.id = eventId;
             trackEvent.element.addEventListener('click', function (e) {
