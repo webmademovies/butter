@@ -24,7 +24,7 @@
         userElement,
         dynamicTrackCreation = options.dynamicTrackCreation,
         restrictToKnownPlugins = options.restrictToKnownPlugins,
-        duration = options && options.duration ? options.duration.duration : 1,
+        duration = options && options.duration ? options.duration : 1,
         scale = options && options.scale ? options.scale : 1,
         parent = document.createElement( "div" ),
         container = document.createElement( "div" ),
@@ -57,6 +57,7 @@
                 newTrack = self.createTrack();
 
             if ( self.getTrack( parentId ) ) {
+
               newTrack.addTrackEvent( self.getTrack( parentId ).removeTrackEvent( eventId ) );
             } else {
               var clientRects = parent.getClientRects();
@@ -155,12 +156,14 @@
                 parentId = ui.draggable[ 0 ].parentNode.id;
 
             if ( self.getTrack( parentId ) ) {
+
               that.addTrackEvent( self.getTrack( parentId ).removeTrackEvent( eventId ) );
             }
             else {
 
               if ( type && plugins[ type ]) {
-                that.createTrackEvent( type, {left: event.clientX/scale}, event, ui );
+                var clientRects = parent.getClientRects();
+                that.createTrackEvent( type, { left: (event.clientX - clientRects[0].left)/scale }, event, ui );
               } //if
 
             } //if
@@ -198,10 +201,20 @@
 
             var trackOptions = plugins[ type ].setup( that, inputOptions, event, ui );
 
+            trackEvent.start = inputOptions.left || 0;
+            trackEvent.end = inputOptions.width || 0;
+            trackEvent.end += trackEvent.start;
+
             var movedCallback = function( event, ui ) {
-              var eventElement = trackEvent.element;
+              var eventElement = trackEvent.element,
+                  track = self.getTrack( this.parentNode.id );
               eventElement.style.top = "0px";
-              pluginDef.moved( that, trackEvent, event, ui );
+              trackEvent.start = $(eventElement).offset().left;
+              trackEvent.end = $(eventElement).width() + trackEvent.start;
+              trackEvent.start /= scale;
+              trackEvent.end /= scale;
+
+              pluginDef.moved( track, trackEvent, event, ui );
             };
 
             trackEvent.options = inputOptions;
@@ -209,10 +222,10 @@
             trackEvent.element = trackOptions.element || this.createEventElement ( trackOptions );
             trackEvent.element.id = eventId;
             trackEvent.element.addEventListener('click', function (e) {
-              pluginDef.click( that, trackEvent, e );
+              pluginDef.click( self.getTrack( this.parentNode.id ), trackEvent, e );
             }, false);
             trackEvent.element.addEventListener('dblclick', function (e) {
-              pluginDef.dblclick( that, trackEvent, e );
+              pluginDef.dblclick( self.getTrack( this.parentNode.id ), trackEvent, e );
             }, false);
             trackEvent.type = type;
             //trackEvent.element = element;
@@ -264,6 +277,7 @@
         };
 
         this.removeTrackEvent = function( id ) {
+
           var trackEvent = events[ id ];
           delete events[ id ];
           element.removeChild( trackEvent.element );

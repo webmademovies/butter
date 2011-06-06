@@ -433,18 +433,13 @@
 
       }
     };
-    
-    var editTrackEvent = function( track, newOptions ) {
-    
-      
-    };
 
     $trackLine.plugin( "butterapp", {
       setup: function( track, options, event, ui ) {
 
         enforceTarget( ui.draggable[ 0 ].id );
 
-        var //offset = options.left + $( "#ui-tracks" ).scrollLeft() - $( "#ui-tracks" ).offset().left,
+        var offset = options.left,
             seconds = options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration(),
             popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
               // going to need manifest help here
@@ -452,11 +447,11 @@
               end: seconds + 2,
               target: ui.draggable[ 0 ].id + "-container"
             }).getTrackEvent( $popcorn.getLastTrackEventId() );
-
-        return { left: options.left, id: popcornTrack._id };
+        $popcorn.media.currentTime += 0.0001;
+        return { left: offset, id: popcornTrack._id };
       },
       moved: function( track, trackEventObj, event, ui ) {
-console.log(trackEventObj);
+
         var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
             manifest = popcornTrack._natives.manifest,
             options = manifest.options,
@@ -472,8 +467,8 @@ console.log(trackEventObj);
           }
         }
 
-        rebuiltEvent.start = ui.position.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
-        rebuiltEvent.end = ( ui.position.left + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
+        rebuiltEvent.start = trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
+        rebuiltEvent.end = ( trackEventObj.element.offsetLeft + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
 
         $popcorn.removeTrackEvent( popcornTrack._id );
 
@@ -481,11 +476,10 @@ console.log(trackEventObj);
 
         popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
         trackEventObj.pluginOptions.id = popcornTrack._id;
+        $popcorn.media.currentTime += 0.0001;
       },
       dblclick: function( track, trackEventObj, event, ui ) {
 
-      
-      
         var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
             manifest = popcornTrack._natives.manifest,
             options = manifest.options,
@@ -494,6 +488,38 @@ console.log(trackEventObj);
             manifestElems = {},
             label,
             prop;
+
+        var rebuildEvent = function() {
+
+          var rebuiltEvent = {},
+              _val;
+
+          $popcorn.removeTrackEvent( popcornTrack._id );
+          var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
+
+          for( prop in manifest.options ) {
+            if ( typeof manifest.options[ prop ] === "object" ) {
+
+              _val = manifestElems[ prop ].val();
+
+              rebuiltEvent[ prop ] = _val
+
+              if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
+                rebuiltEvent[ prop ] = +_val;
+              }
+            }
+          }
+
+          $popcorn[ trackType ]( rebuiltEvent );
+          popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+          removedTrack.pluginOptions.id = popcornTrack._id;
+          track.addTrackEvent( removedTrack );
+          
+          removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
+          removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
+
+          $popcorn.media.currentTime += 0.0001;
+        };
 
         $editor.dialog({
           autoOpen: false,
@@ -511,6 +537,7 @@ console.log(trackEventObj);
 
                   //  Remove the track when user selects "ok"
                   $popcorn.removeTrackEvent( popcornTrack._id );
+
                   track.removeTrackEvent( trackEventObj.element.id );
                   $editor.dialog("close");
                 }
@@ -523,64 +550,12 @@ console.log(trackEventObj);
             },
             "OK" : function() {
 
-              var rebuiltEvent = {},
-                  _val;
-
-              $popcorn.removeTrackEvent( popcornTrack._id );
-              var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
-
-              for( prop in manifest.options ) {
-                if ( typeof manifest.options[ prop ] === "object" ) {
-
-                  _val = manifestElems[ prop ].val();
-
-                  rebuiltEvent[ prop ] = _val
-
-                  if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
-                    rebuiltEvent[ prop ] = +_val;
-                  }
-                }
-              }
-
-              $popcorn[ trackType ]( rebuiltEvent );
-              popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-              removedTrack.pluginOptions.id = popcornTrack._id;
-              track.addTrackEvent( removedTrack );
-              
-              removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
-              removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
-
+              rebuildEvent();
               $editor.dialog("close");
             },
             "Apply" : function() {
 
-              var rebuiltEvent = {},
-                  _val;
-
-              $popcorn.removeTrackEvent( popcornTrack._id );
-              var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
-
-              for( prop in manifest.options ) {
-                if ( typeof manifest.options[ prop ] === "object" ) {
-
-                  _val = manifestElems[ prop ].val();
-
-                  rebuiltEvent[ prop ] = _val
-
-                  if ( !!_val && [ "start", "end" ].indexOf(prop) === -1 && !isNaN( _val )  ) {
-                    rebuiltEvent[ prop ] = +_val;
-                  }
-                }
-              }
-
-              $popcorn[ trackType ]( rebuiltEvent );
-              popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-              removedTrack.pluginOptions.id = popcornTrack._id;
-              track.addTrackEvent( removedTrack );
-              
-              removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
-              removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
-
+              rebuildEvent();
             }
           }
         });
