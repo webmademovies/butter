@@ -444,8 +444,8 @@
 
         enforceTarget( ui.draggable[ 0 ].id );
 
-        var offset = options.left + $( "#ui-tracks" ).scrollLeft() - $( "#ui-tracks" ).offset().left,
-            seconds = offset / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration(),
+        var //offset = options.left + $( "#ui-tracks" ).scrollLeft() - $( "#ui-tracks" ).offset().left,
+            seconds = options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration(),
             popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
               // going to need manifest help here
               start: seconds,
@@ -453,11 +453,11 @@
               target: ui.draggable[ 0 ].id + "-container"
             }).getTrackEvent( $popcorn.getLastTrackEventId() );
 
-        return { left: offset, id: popcornTrack._id };
+        return { left: options.left, id: popcornTrack._id };
       },
       moved: function( track, trackEventObj, event, ui ) {
-
-        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.event.id ),
+console.log(trackEventObj);
+        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.options.id ),
             manifest = popcornTrack._natives.manifest,
             options = manifest.options,
             trackType = popcornTrack._natives.type,
