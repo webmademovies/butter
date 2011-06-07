@@ -421,7 +421,8 @@
 
         openDialogs = 0;
 
-
+    var manifestElems = {},
+        outsidePopcornTrack;
 
     var enforceTarget = function( plugin ) {
 
@@ -447,6 +448,7 @@
               end: seconds + 2,
               target: ui.draggable[ 0 ].id + "-container"
             }).getTrackEvent( $popcorn.getLastTrackEventId() );
+
         $popcorn.media.currentTime += 0.0001;
         return { left: offset, id: popcornTrack._id };
       },
@@ -467,6 +469,8 @@
           }
         }
 
+        rebuiltEvent.target = trackType + "-container";
+
         rebuiltEvent.start = trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
         rebuiltEvent.end = ( trackEventObj.element.offsetLeft + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
 
@@ -474,27 +478,40 @@
 
         $popcorn[ trackType ]( rebuiltEvent );
 
-        popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+
+        if ( outsidePopcornTrack && outsidePopcornTrack._id === popcornTrack._id ) {
+
+          manifestElems[ "end" ] && manifestElems[ "end" ].val( rebuiltEvent.end );
+          manifestElems[ "start" ] && manifestElems[ "start" ].val( rebuiltEvent.start );
+
+          outsidePopcornTrack = popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+        } else {
+
+          popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+        }
+        
         trackEventObj.pluginOptions.id = popcornTrack._id;
         $popcorn.media.currentTime += 0.0001;
       },
       dblclick: function( track, trackEventObj, event, ui ) {
 
-        var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
-            manifest = popcornTrack._natives.manifest,
+        outsidePopcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id );
+
+        var manifest = outsidePopcornTrack._natives.manifest,
             options = manifest.options,
-            trackType = popcornTrack._natives.type,
+            trackType = outsidePopcornTrack._natives.type,
             rebuiltEvent = {},
-            manifestElems = {},
             label,
             prop;
+
+        manifestElems = {};
 
         var rebuildEvent = function() {
 
           var rebuiltEvent = {},
               _val;
 
-          $popcorn.removeTrackEvent( popcornTrack._id );
+          $popcorn.removeTrackEvent( outsidePopcornTrack._id );
           var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
 
           for( prop in manifest.options ) {
@@ -510,13 +527,15 @@
             }
           }
 
+          rebuiltEvent.target = trackType + "-container";
+
           $popcorn[ trackType ]( rebuiltEvent );
-          popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
-          removedTrack.pluginOptions.id = popcornTrack._id;
+          outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+          removedTrack.pluginOptions.id = outsidePopcornTrack._id;
           track.addTrackEvent( removedTrack );
           
-          removedTrack.element.style.left = popcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
-          removedTrack.element.style.width = ( popcornTrack.end - popcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
+          removedTrack.element.style.left = outsidePopcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
+          removedTrack.element.style.width = ( outsidePopcornTrack.end - outsidePopcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
 
           $popcorn.media.currentTime += 0.0001;
         };
@@ -536,10 +555,11 @@
                 callback: function () {
 
                   //  Remove the track when user selects "ok"
-                  $popcorn.removeTrackEvent( popcornTrack._id );
+                  $popcorn.removeTrackEvent( outsidePopcornTrack._id );
 
                   track.removeTrackEvent( trackEventObj.element.id );
                   $editor.dialog("close");
+                  outsidePopcornTrack = null;
                 }
               });
             },
@@ -547,11 +567,13 @@
             "Cancel": function() {
 
               $editor.dialog("close");
+              outsidePopcornTrack = null;
             },
             "OK" : function() {
 
               rebuildEvent();
               $editor.dialog("close");
+              outsidePopcornTrack = null;
             },
             "Apply" : function() {
 
@@ -584,7 +606,7 @@
 
             if ( elemType === "input" ) {
 
-              var rounded = popcornTrack[ prop ];
+              var rounded = outsidePopcornTrack[ prop ];
 
               //  Round displayed times to nearest quarter of a second
               if ( _.isNumber( +rounded ) && [ "start", "end" ].indexOf( prop ) > -1 ) {
@@ -618,7 +640,6 @@
         }
 
         $editor.dialog("open");
-
       }
     });
     
