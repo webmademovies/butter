@@ -419,33 +419,35 @@
         MAX_AUTOSAVES = 5,
         AUTOSAVE_INTERVAL = 30000;
 
-        openDialogs = 0;
+        openDialogs = 0,
 
-    var manifestElems = {},
+        // track editing
+        manifestElems = {},
         outsidePopcornTrack;
 
+    // creates targetable display div if one doesn't exist
     var enforceTarget = function( plugin ) {
 
       if ( !$("#" + plugin + "-container").length ) {
 
         $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
-
         $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
-
       }
     };
 
     $trackLine.plugin( "butterapp", {
+      // called when a new track is created
       setup: function( track, options, event, ui ) {
 
         enforceTarget( ui.draggable[ 0 ].id );
 
         var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
             end = start + 2,
+            // force div to display on a fourth of a second
             width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
             left = start / $popcorn.duration() * track.getElement().offsetWidth,
             popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
-              // going to need manifest help here
+              // may need manifest help here
               start: start,
               end: end,
               target: ui.draggable[ 0 ].id + "-container"
@@ -454,6 +456,7 @@
         $popcorn.media.currentTime += 0.0001;
         return { left: left, width: width, id: popcornTrack._id };
       },
+      // called when an existing track is moved
       moved: function( track, trackEventObj, event, ui ) {
 
         var popcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id ),
@@ -463,6 +466,8 @@
             rebuiltEvent = {},
             prop;
 
+        // copy over old properties into new
+        // we only care to modify start and end
         for ( prop in options ) {
 
           if ( typeof options[ prop ] === "object" ) {
@@ -473,34 +478,40 @@
 
         rebuiltEvent.target = trackType + "-container";
 
+        // modify start and end based on div's new position
         rebuiltEvent.start = _( trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth();
         rebuiltEvent.end = _( ( trackEventObj.element.offsetLeft + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth();
 
+        // force new div to display on a fourth of a second
         trackEventObj.element.style.left = rebuiltEvent.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
         trackEventObj.element.style.width = ( rebuiltEvent.end - rebuiltEvent.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
 
         $popcorn.removeTrackEvent( popcornTrack._id );
-
         $popcorn[ trackType ]( rebuiltEvent );
 
-
+        // dialog box is open on this track, update times
         if ( outsidePopcornTrack && outsidePopcornTrack._id === popcornTrack._id ) {
 
           manifestElems[ "end" ] && manifestElems[ "end" ].val( rebuiltEvent.end );
-          manifestElems[ "start" ] && manifestElems[ "start" ].val( rebuiltEvent.start ) ;
+          manifestElems[ "start" ] && manifestElems[ "start" ].val( rebuiltEvent.start );
 
           outsidePopcornTrack = popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
         } else {
 
           popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
         }
-        
+
         trackEventObj.pluginOptions.id = popcornTrack._id;
         $popcorn.media.currentTime += 0.0001;
       },
+      // called when a track is double clicked
       dblclick: function( track, trackEventObj, event, ui ) {
 
+        // create and reset reference to popcorn track currently open
         outsidePopcornTrack = $popcorn.getTrackEvent( trackEventObj.pluginOptions.id );
+
+        // clear any references to dialog form elements
+        manifestElems = {};
 
         var manifest = outsidePopcornTrack._natives.manifest,
             options = manifest.options,
@@ -509,8 +520,8 @@
             label,
             prop;
 
-        manifestElems = {};
-
+        // function to rebuild event with data in form fields
+        // function is dependant to this scope
         var rebuildEvent = function() {
 
           var rebuiltEvent = {},
@@ -519,6 +530,7 @@
           $popcorn.removeTrackEvent( outsidePopcornTrack._id );
           var removedTrack = track.removeTrackEvent( trackEventObj.element.id );
 
+          // modify manifest only attributes via matching form fields
           for( prop in manifest.options ) {
             if ( typeof manifest.options[ prop ] === "object" ) {
 
@@ -536,6 +548,7 @@
 
           $popcorn[ trackType ]( rebuiltEvent );
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
+
           removedTrack.pluginOptions.id = outsidePopcornTrack._id;
           track.addTrackEvent( removedTrack );
 
@@ -545,11 +558,12 @@
           $popcorn.media.currentTime += 0.0001;
         };
 
+        // create the form field dialog for track editing
+        // use $editor.dialog("open"); to open it
         $editor.dialog({
           autoOpen: false,
           title: "Edit " + _( trackType ).capitalize(),
           buttons: {
-
             "Delete": function() {
 
               $doc.trigger( "applicationNotice", {
@@ -568,7 +582,6 @@
                 }
               });
             },
-
             "Cancel": function() {
 
               $editor.dialog("close");
@@ -603,11 +616,9 @@
                       className: "text"
                     });
 
-
             manifestElems[ prop ] = elem;
-            
-            label = $("<label/>").attr("for", elemLabel).text(elemLabel);
 
+            label = $("<label/>").attr("for", elemLabel).text(elemLabel);
 
             if ( elemType === "input" ) {
 
@@ -620,7 +631,6 @@
               }
 
               elem.val( rounded );
-
             }
 
             if ( elemType === "select" ) {
@@ -628,26 +638,22 @@
               _.each( opt.options, function( type ) {
 
                 $( "<option/>", {
-
                   value: type,
                   text: _( type ).capitalize()
-
                 }).appendTo( elem );
-
               });
-
             }
 
             elem.appendTo(label);
             label.appendTo( "#ui-track-event-editor" );
-
           }
         }
 
+        // open the form field
         $editor.dialog("open");
       }
     });
-    
+
     $doc.bind("dialogopen dialogclose", function ( event ) {
       if ( event.type === "dialogopen" ) {
         ++openDialogs;
