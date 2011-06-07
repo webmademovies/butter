@@ -440,17 +440,19 @@
 
         enforceTarget( ui.draggable[ 0 ].id );
 
-        var offset = options.left,
-            seconds = options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration(),
+        var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
+            end = start + 2,
+            width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
+            left = start / $popcorn.duration() * track.getElement().offsetWidth,
             popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
               // going to need manifest help here
-              start: seconds,
-              end: seconds + 2,
+              start: start,
+              end: end,
               target: ui.draggable[ 0 ].id + "-container"
             }).getTrackEvent( $popcorn.getLastTrackEventId() );
 
         $popcorn.media.currentTime += 0.0001;
-        return { left: offset, id: popcornTrack._id };
+        return { left: left, width: width, id: popcornTrack._id };
       },
       moved: function( track, trackEventObj, event, ui ) {
 
@@ -471,8 +473,11 @@
 
         rebuiltEvent.target = trackType + "-container";
 
-        rebuiltEvent.start = trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
-        rebuiltEvent.end = ( trackEventObj.element.offsetLeft + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration();
+        rebuiltEvent.start = _( trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth();
+        rebuiltEvent.end = _( ( trackEventObj.element.offsetLeft + trackEventObj.element.offsetWidth ) / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth();
+
+        trackEventObj.element.style.left = rebuiltEvent.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
+        trackEventObj.element.style.width = ( rebuiltEvent.end - rebuiltEvent.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
 
         $popcorn.removeTrackEvent( popcornTrack._id );
 
@@ -482,7 +487,7 @@
         if ( outsidePopcornTrack && outsidePopcornTrack._id === popcornTrack._id ) {
 
           manifestElems[ "end" ] && manifestElems[ "end" ].val( rebuiltEvent.end );
-          manifestElems[ "start" ] && manifestElems[ "start" ].val( rebuiltEvent.start );
+          manifestElems[ "start" ] && manifestElems[ "start" ].val( rebuiltEvent.start ) ;
 
           outsidePopcornTrack = popcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
         } else {
@@ -533,7 +538,7 @@
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
           removedTrack.pluginOptions.id = outsidePopcornTrack._id;
           track.addTrackEvent( removedTrack );
-          
+
           removedTrack.element.style.left = outsidePopcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
           removedTrack.element.style.width = ( outsidePopcornTrack.end - outsidePopcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
 
