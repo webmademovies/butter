@@ -417,7 +417,7 @@
         autosaveIndex = 0,
         autosaveEnabled = true, 
         MAX_AUTOSAVES = 5,
-        AUTOSAVE_INTERVAL = 30000;
+        AUTOSAVE_INTERVAL = 30000,
 
         openDialogs = 0,
 

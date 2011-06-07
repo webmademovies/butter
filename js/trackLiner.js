@@ -139,7 +139,9 @@
             that = this,
             element = document.createElement( "div" );
 
+        element.style.background = "#CCC";
         element.style.background = "-moz-linear-gradient(top,  #eee,  #999)";
+        element.style.background = "-webkit-gradient(linear, center top, center bottom, from(#eee), to(#999))";
         element.style.height = "36px";
         element.style.position = "relative";
         element.id = trackId;
@@ -177,7 +179,9 @@
         this.createEventElement = function ( options ) {
           var element = document.createElement('DIV');
           element.style.cursor = options.cursor || "move";
-          element.style.background = options.backgroud || "-moz-linear-gradient(top,  #ff0,  #660)";
+          element.style.background = "#990";
+          element.style.background = "-moz-linear-gradient(top,  #ff0,  #660)";
+          element.style.background = "-webkit-gradient(linear, center top, center bottom, from(#ff0), to(#660))";
           element.style.opacity = options.opacity || "0.5";
           element.style.height = options.height || "100%";
           element.style.width = options.width ? options.width*scale + "px" : "100px";
