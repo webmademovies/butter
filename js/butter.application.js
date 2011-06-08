@@ -454,7 +454,7 @@
             }).getTrackEvent( $popcorn.getLastTrackEventId() );
 
         $popcorn.media.currentTime += 0.0001;
-        return { left: left, width: width, id: popcornTrack._id };
+        return { left: left, innerHTML: ui.draggable[ 0 ].id, width: width, id: popcornTrack._id };
       },
       // called when an existing track is moved
       moved: function( track, trackEventObj, event, ui ) {
