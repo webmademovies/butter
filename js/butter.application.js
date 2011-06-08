@@ -415,8 +415,6 @@
 
         openDialogs = 0,
         tempVideoUrl = "";
-
-        console.log ($ioVideoTitle.val());
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
       if ( event.type === "dialogopen" ) {
@@ -1838,10 +1836,9 @@
     controls = {
 
       autosave: function() {
-        if ( autosaveEnabled ) {
+        if ( autosaveEnabled && openDialogs === 0 ) {
 
           var name = $ioVideoTitle.val() + "-Autosave";
-          console.log (name);
           controls.save(name);
 
         } //if
