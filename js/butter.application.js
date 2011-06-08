@@ -297,6 +297,31 @@
     var objects = {};
         numObjects = 0;
 
+    // From Jason Bunting
+    var replaceHTMLChars = (function() {
+
+      var translate_re = /(\ |\<|\>|\#|\&)/g;
+      var translate = {
+        " "  : "&nbsp",
+        "#"  : "&#35;", 
+        "<"  : "&lt", 
+        ">"  : "&gt",
+        "&"  : "&amp",
+        "\"" : "&quote",
+        "'"  : "&#39;",
+      };
+
+      return function( s ) {
+
+        return ( s.replace(translate_re, function(match, entity) { 
+
+          return translate[entity]; 
+
+        }) );
+
+      }
+    })(); //replaceHTMLChars
+
     this.add = function ( id, item ) {
 
       if ( !id  || id === '' ) {
@@ -317,7 +342,7 @@
 
       } //if
 
-      option.innerHTML = id;
+      option.innerHTML = replaceHTMLChars( id );
       option.value = id;
 
       objects[ id ] = {
