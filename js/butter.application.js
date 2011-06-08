@@ -26,7 +26,8 @@
     },
     //  Create a slug string, ex: "This is a test" > "this-is-a-test"
     slug: function(str) {
-      return str.toLowerCase().match(/[a-z0-9]+/ig).join("-");
+      str = str.toLowerCase().match(/[a-z0-9]+/ig).join("-") || str;
+      return str;
     },
     //  Zero pads a number
     pad: function( number ) {
@@ -228,10 +229,12 @@
 
     var stored = TrackStore.getStorageAsObject();
 
-    if ( stored.projects[ slug ] ) {
+    if( slug ) {
+      if ( stored.projects[ slug ] ) {
 
-      delete stored.projects[ slug ];
+        delete stored.projects[ slug ];
 
+      }
     }
 
     localStorage.setItem(
@@ -1884,7 +1887,6 @@
         var store = new TrackStore(),
             title = $ioVideoTitle.val(),
             slug = _( title ).slug();
-
 
         store.remove( slug, function () {
 
