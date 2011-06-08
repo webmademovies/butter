@@ -717,7 +717,7 @@
     //  Allow TrackMeta to be globally accessible
     global.TrackMeta = TrackMeta;
 
-
+    
     //  Load the workspace menu
     TrackMeta.menu.load( "#ui-user-videos" );
 
@@ -727,8 +727,9 @@
 
 
     //  TrackEditor Module - organizes all track event editting logic
+  
     TrackEditor = ( function(global) {
-
+      
       return {
 
         timeLineWidth: 0,
@@ -1277,6 +1278,7 @@
           }
         }
       };
+
 
     })(global);
 
@@ -2147,30 +2149,32 @@
         "Start": function() {
           var $this = $(this),
               value = $this.children( "input" ).val();
+          var webServer = document.createElement( "div" );
           
           if ( /file/.test( location.protocol ) && ( value.search(/youtube/i) >= 0 || value.search(/vimeo/i) >= 0 || value.search(/soundcloud/i) >= 0 ) ) {
 
-            var webServer = document.createElement( "div" );
-            webServer.innerHTML = "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver.";
-
-            $( webServer ).dialog({
-              modal: true,
-              title: "Error",
-              autoOpen: true,
-              buttons: {
-                "Close": function() {
-
-                  $( this ).dialog( "close" );
-                }
-              }
+            $doc.trigger( "applicationError", {
+              type: "Video needs to be run from a web server",
+              message: "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver."
             });
 
-          } else {
+           } else {
 
             $this.dialog( "close" );
+            try {
+              $ioVideoUrl.val( value );
+              $('[data-control="load"]').trigger( "click" );
+            } catch (err){
 
-            $ioVideoUrl.val( value );
-            $('[data-control="load"]').trigger( "click" );
+              $doc.trigger( "applicationError", {
+                type: "URL Error",
+                message: "Please check your url"
+              });
+
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" );  
+            }
+            
           }
         }
       }
