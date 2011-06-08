@@ -528,6 +528,8 @@
 
     $("#ui-target-database-add").click( function ( event, ui ) {
 
+      var val = $("#ui-target-database-add-input").val();
+
       if ( val === '' ) {
 
         $("#ui-application-error").html("<div><b>Error:</b> Target names can not be blank.</div>");
@@ -543,7 +545,7 @@
       }
       else {
 
-        targetDatabase.add( $("#ui-target-database-add-input").val() , {} );
+        targetDatabase.add( val, {} );
         $("#ui-target-database-add-input").val('');
 
       } //if
