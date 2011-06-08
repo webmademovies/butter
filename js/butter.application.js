@@ -852,7 +852,7 @@
           if( url === "baseplayer" ) {
             $popcorn = Popcorn ( Popcorn.baseplayer() );
             $popcorn._resource = document.getElementById('video-div');
-            $popcorn.play();
+
             setTimeout( function () {
 
               self.timeLineReady( $popcorn, timelineReadyFn );
@@ -2147,11 +2147,31 @@
         "Start": function() {
           var $this = $(this),
               value = $this.children( "input" ).val();
+          
+          if ( /file/.test( location.protocol ) && ( value.search(/youtube/i) >= 0 || value.search(/vimeo/i) >= 0 || value.search(/soundcloud/i) >= 0 ) ) {
 
-          $this.dialog( "close" );
+            var webServer = document.createElement( "div" );
+            webServer.innerHTML = "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver.";
 
-          $ioVideoUrl.val( value );
-          $('[data-control="load"]').trigger( "click" );
+            $( webServer ).dialog({
+              modal: true,
+              title: "Error",
+              autoOpen: true,
+              buttons: {
+                "Close": function() {
+
+                  $( this ).dialog( "close" );
+                }
+              }
+            });
+
+          } else {
+
+            $this.dialog( "close" );
+
+            $ioVideoUrl.val( value );
+            $('[data-control="load"]').trigger( "click" );
+          }
         }
       }
     });
