@@ -2165,14 +2165,14 @@
               $ioVideoUrl.val( value );
               $('[data-control="load"]').trigger( "click" );
             } catch (err){
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" ); 
+              $uiStartScreen.dialog( "open" ); 
 
               $doc.trigger( "applicationError", {
                 type: "URL Error",
                 message: "Please check your url"
               });
-
-              $doc.trigger( "videoReady" );
-              $doc.trigger( "videoLoadComplete" );  
             }
             
           }
