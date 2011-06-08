@@ -415,7 +415,8 @@
         MAX_AUTOSAVES = 5,
         AUTOSAVE_INTERVAL = 30000;
 
-        openDialogs = 0;
+        openDialogs = 0,
+        tempVideoUrl = "";
 
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
@@ -746,9 +747,19 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+            if( $ioVideoUrl.val() == "baseplayer"  ){
+              callback && callback();
 
+              //  Allows other unrelated parts of the
+              //  application to react when a video is ready
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" );
 
+              //  clear the interval
+              clearInterval( onReadyInterval );
+            }
+            else if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+              $p.pause();
             //console.log("$p.video.readyState >= 2 && $p.video.duration", $p.video.duration);
 
               //  execute callback if one was given
@@ -775,7 +786,6 @@
 
             //  When ready, draw the timeline
             this.drawTimeLine( $p.video.duration );
-
             //  execute callback if one was given
             callback && callback();
 
@@ -799,11 +809,15 @@
               $v.remove();
             }
 
-            $video = $( "<video/>", {
+            if( $ioVideoUrl.val().search(/youtube/i) <= 0 && $ioVideoUrl.val().search(/vimeo/i) <= 0 && $ioVideoUrl.val().search(/soundcloud/i) <= 0 && $ioVideoUrl.val() != "baseplayer" ){
 
-              id: "video"
+              $video = $( "<video/>", {
 
-            }).prependTo( "#ui-panel-video" );
+                id: "video"
+
+              }).prependTo( "#video-div" );
+
+            }
 
           },
 
@@ -812,13 +826,13 @@
           },
 
           timescale: function() {
+
             TrackEditor.deleteCanvas( "ui-tracks-time", "ui-tracks-time-canvas" );
           }
         },
 
         loadVideoFromUrl: function( callback ) {
-
-
+         document.getElementById("video-div").innerHTML = " ";
           $doc.trigger( "videoLoadStart" );
 
 
@@ -833,8 +847,42 @@
               netReadyInt,
               timelineReadyFn;
 
-
+          tempVideoUrl = $ioVideoUrl.val();
           this.unload.video();
+
+          if( url == "baseplayer" ) {
+            $popcorn = Popcorn ( Popcorn.baseplayer() );
+            $popcorn._resource = document.getElementById('video-div');
+            $popcorn.play();
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+            }, 13);
+          } else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
+            if( url.search(/youtube/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: 430, height: 300 } ) );
+              $popcorn.play();
+            }
+            else if( url.search(/vimeo/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.vimeo( "video-div", url, {
+                css: {
+                  width: "430px",
+                  height: "300px"
+                }
+              }));
+              $popcorn.play();
+            }
+            else if( url.search(/soundcloud/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.soundcloud( "video-div", url) );
+              $popcorn.play();
+            }
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+          }, 13);
+          } else {
 
 
           //  Create a new source element and append to the video element
@@ -848,9 +896,7 @@
           //  Store the new Popcorn object in the cache reference
           $popcorn = Popcorn("#video");
 
-          //  Ensure that the network is ready
           netReadyInt = setInterval( function () {
-
 
             //  Firefox is an idiot
             if ( $popcorn.video.currentSrc === url ) {
@@ -861,7 +907,7 @@
             }
 
           }, 13);
-
+          }
 
           //  When new video and timeline are ready
           timelineReadyFn = function() {
@@ -877,7 +923,6 @@
 
             $ioVideoTitle.val("");
             $ioVideoDesc.val("");
-
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -953,10 +998,9 @@
 
             //  Listen on timeupdates
             $popcorn.listen( "timeupdate", function( event ) {
-
               //  Updates the currenttime display
               $ioCurrentTime.val(function() {
-
+                
                 var $this = $(this),
                     prop = _( this.id.replace("io-", "") ).camel(),
                     val = $popcorn[ prop ]();
@@ -1056,7 +1100,6 @@
 
             //  Trigger timeupdate to initialize the current time disp lay
             $popcorn.trigger( "timeupdate" );
-
 
             //  If a callback was provided, fire now
             callback && callback();
@@ -1163,8 +1206,8 @@
 
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 800;
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
-          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
+          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
           if ( TrackEditor.timeLineWidth > 32767 ) {
 
@@ -1244,6 +1287,7 @@
             }
 
             context.stroke();
+
           }
         }
       };
@@ -1911,18 +1955,8 @@
 
       },
       save: function( autosaveTitle ) {
-
+ 
         autosaveTitle = autosaveTitle || false;
-
-        if ( !$popcorn || !$popcorn.data ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Video Loaded",
-            message: "I cannot add a Track Event - there is no movie loaded."
-          });
-
-          return;
-        }
 
         var store = new TrackStore(),
             title = autosaveTitle || $ioVideoTitle.val(),
@@ -1932,18 +1966,7 @@
             layout = $layoutlist.attr( "data-layout" ),
             slug;
 
-
-        if ( !title ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Title",
-            message: "You will need to add a title in order to save your project."
-          });
-
-          return;
-        }
-
-
+        !title ? title = "Butter " + new Date() : title;
         slug = _( title ).slug();
 
 
@@ -1955,20 +1978,8 @@
         store.Autosave( autosaveTitle );
 
 
-        if ( !store.read( slug ) ) {
-
-         //console.log("creating....");
-
-          store.create( $popcorn.data.trackEvents.byStart );
-
-        } else {
-
-         //console.log("updating....");
-          store.update( slug, $popcorn.data.trackEvents.byStart );
-
-        }
-
-
+        //  Removed the if statement and creation of slug as we will always have a title now
+        store.update( slug, $popcorn.data.trackEvents.byStart );
 
         //  Reload/update menu
         TrackMeta.menu.load( "#ui-user-videos" );
@@ -2194,8 +2205,11 @@
       });
     });
 
-    $("#prj-details").click(function(){
-      $("#prjDiv").dialog({
+    $( "#prj-details" ).click( function () {
+      var tmpUrl = $ioVideoUrl.val(),
+          tmpTitle = $ioVideoTitle.val(),
+          tmpDescr = $ioVideoDesc.val();
+      $( "#prjDiv" ).dialog ( {
         modal: true,
         title: "Project Details",
         autoOpen: true,
@@ -2204,12 +2218,16 @@
         buttons:
           {
             "Close": function() {
-              $(this).dialog( "close" );
+              $ioVideoUrl.val( tmpUrl );
+              $ioVideoTitle.val( tmpTitle );
+              $ioVideoDesc.val( tmpDescr );
+              $( this ).dialog( "close" );
+            },
+            "Save": function() {
+              controls[ "save" ]();
+              $( this ).dialog( "close" );
             }
           }
-
-
-
       });
     });
 
@@ -2230,7 +2248,7 @@
     $("#help-btn").click(function(){
       var help_div = document.createElement("div");
       help_div.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
-                       "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
+                           "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
       $(help_div).dialog({
         modal: true,
         title: "Help",
@@ -2239,7 +2257,7 @@
         height: 435,
         buttons: {
           "Close": function() {
-            $(this).dialog( "close" );
+            $( this ).dialog( "close" );
           }
         }
       });
