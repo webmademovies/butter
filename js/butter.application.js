@@ -374,6 +374,7 @@
         $themelist = $("#ui-theme"),
         $layoutlist = $("#ui-layout"),
         $exporttolist = $("#ui-export-to"),
+        $importtolist = $("#ui-import-to"),
 
         //  io- prefix ids map to inputs elements
         $ioCurrentTime = $("#io-current-time"),
@@ -2213,6 +2214,19 @@
       });
     });
 
+    //  Render Import menu
+    _.each( [ "Universal Subtitles", "Project" ], function ( key ) {
+      var type = key.split(/\s/)[0].toLowerCase(),
+      $li = $("<li/>", {
+
+        html: '<h4><img class="icon" src="img/' + type + '.png">' + key + "</h4>",
+        className: "select-li clickable"
+
+      }).appendTo( "#ui-import-to" );
+
+      $li.data( "type",  type );
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
@@ -2270,6 +2284,46 @@
     //  THIS IS THE WORST CODE EVER.
     //  TODO: MOVE OUT TO FUNCTION DECLARATION - MAJOR ABSTRACTION
     //  Export options list event
+    $importtolist.delegate( "li", "click", function () {
+
+      if ( !$popcorn || !$popcorn.data ) {
+
+        $doc.trigger( "applicationError", {
+          type: "No Video Loaded",
+          message: "I cannot export your movie - there is no video loaded."
+        });
+
+        return;
+      }
+
+      var elseif = {
+        universal: function() {
+
+          var videoURL = $ioVideoUrl.val();
+
+          $.getJSON( "http://www.universalsubtitles.org/api/subtitles/?video_url=" + videoURL + "&callback=?", function( data ) {
+
+            for ( var i = 0, subsLength = data.length; i < subsLength; i++ ) {
+
+              $popcorn.subtitle({
+                start: data[ i ].start_time,
+                end: data[ i ].end_time,
+                text: data[ i ].text
+              });
+            }
+
+            document.getElementById( "subtitlediv" ).style.zIndex = 9001;
+          });
+        },
+        project: function() {
+
+          controls.import();
+        }
+      };
+
+      elseif[$(this).data( "type" )]();
+    });
+
     $exporttolist.delegate( "li", "click", function () {
 
 
