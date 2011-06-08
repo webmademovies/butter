@@ -425,6 +425,16 @@
         manifestElems = {},
         outsidePopcornTrack;
 
+    var addTrackEvent = function( options ) {
+
+      // use options.type, but support older options.id
+      options.type = options.type || options.id;
+      delete options.id;
+      var track = $trackLine.getTrack( "trackLiner0" ) || $trackLine.createTrack();
+
+      track.createTrackEvent( "butterapp", options );
+    };
+
     // creates targetable display div if one doesn't exist
     var enforceTarget = function( plugin ) {
 
@@ -439,22 +449,40 @@
       // called when a new track is created
       setup: function( track, options, event, ui ) {
 
-        enforceTarget( ui.draggable[ 0 ].id );
+        if ( ui ) {
 
-        var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
-            end = start + 2,
-            // force div to display on a fourth of a second
-            width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
-            left = start / $popcorn.duration() * track.getElement().offsetWidth,
-            popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
-              // may need manifest help here
-              start: start,
-              end: end,
-              target: ui.draggable[ 0 ].id + "-container"
-            }).getTrackEvent( $popcorn.getLastTrackEventId() );
+          enforceTarget( ui.draggable[ 0 ].id );
 
-        $popcorn.media.currentTime += 0.0001;
-        return { left: left, innerHTML: ui.draggable[ 0 ].id, width: width, id: popcornTrack._id };
+          var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
+              end = start + 2,
+              // force div to display on a fourth of a second
+              width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
+              left = start / $popcorn.duration() * track.getElement().offsetWidth,
+              popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
+                // may need manifest help here
+                start: start,
+                end: end,
+                target: ui.draggable[ 0 ].id + "-container"
+              }).getTrackEvent( $popcorn.getLastTrackEventId() );
+
+          $popcorn.media.currentTime += 0.0001;
+
+          return { left: left, innerHTML: ui.draggable[ 0 ].id, width: width, id: popcornTrack._id };
+        } else {
+
+          enforceTarget( options.type );
+
+          var start = options.start,
+              end = options.end,
+              // force div to display on a fourth of a second
+              width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
+              left = start / $popcorn.duration() * track.getElement().offsetWidth,
+              popcornTrack = $popcorn[ options.type ](options).getTrackEvent( $popcorn.getLastTrackEventId() );
+
+          $popcorn.media.currentTime += 0.0001;
+
+          return { left: left, innerHTML: options.type, width: width, id: popcornTrack._id };
+        }
       },
       // called when an existing track is moved
       moved: function( track, trackEventObj, event, ui ) {
@@ -890,10 +918,9 @@
 
               _.each( trackDataObj, function( data, key ) {
 
-                var options = _.extend( {}, { id: key }, data );
+                var options = _.extend( {}, { type: key }, data );
 
-                // need to reactivate this
-                //addTrackEvent.call( options, options, $trackLine.createTrack() );
+                addTrackEvent( options );
 
               });
 
