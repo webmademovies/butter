@@ -120,9 +120,11 @@
 <div class="outer-west">
 
   <div id="ui-panel-video" class="span-11" data-export="true">
-    <video id="video" preload="auto" autobuffer>
-      <p>Your user agent does not support the HTML5 Video element.</p> 
-    </video>   
+    <div id="video-div"   width="430px" height="300px">
+      <video id="video" preload="auto" autobuffer>
+        <p>Your user agent does not support the HTML5 Video element.</p> 
+      </video>   
+    </div>
 
     <div id="ui-video-controls" class="span-11 last">
       <button>
@@ -155,29 +157,10 @@
 
 
   <div id="ui-panel-plugins" class="span-11 last">
-    <div id="ui-accordion-tools" class="ui-accordion-panel">
+    <div id="ui-command-tools" class="ui-command-panel">
 
-
-      <h3><a href="#">Add Commands</a></h3>
       <div>
         <ul id="ui-plugin-select-list" class="select-ul">
-        </ul>
-      </div>
-
-      <h3><a href="#">Project Details</a></h3>
-      <div>
-        <input placeholder="Title" type="text" id="io-video-title" name="io-video-title" class="text"  style="width:388px;" value="New Project" />
-        <textarea placeholder="Description" id="io-video-description" style="width:388px;height:25px"  class="text"></textarea>
-        <button class="ui-menu-controls" data-control="save" >Save</button>
-        <button class="ui-menu-controls" data-control="remove" >Delete</button>
-      </div>
-
-      <h3><a href="#">Help</a></h3>
-      <div>
-        <ul>
-          <li>[ Shift + Click ] on a track event to Delete it.</li>
-
-          <li>[ Shift + Right or Left ] in the time display to jump to the next frame.</li>
         </ul>
       </div>
       <!--
@@ -196,7 +179,6 @@
   <header>
     <div class="span-26 last">
       <img class="logo" src="img/butterapp-stars-32x32.png" title="Butter" alt="Butter Logo">
-      <input placeholder="Video Url" type="text" id="io-video-url" name="io-video-url" class="text ui-menu-entity" value="http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm"> 
       <!--
       <input placeholder="Video Url" type="text" id="io-video-url" name="io-video-url" class="text ui-menu-entity" value="file:///home/secretrobotron/src/butter/tryme.ogv"> 
       -->
@@ -222,6 +204,17 @@
       <button class="ui-menuset">Export Project</button> 
       <ul id="ui-export-to" class="select-ul is-menu">
       </ul>
+
+      <button id="help-btn" class="ui-menuset">Help</button>
+      <button id="prj-details" class="ui-menuset">Project Details</button>
+
+      <div id="prjDiv" style="display: none">
+        <input placeholder="Video Url" type="text" id="io-video-url" name="io-video-url" class="text"
+               style="width:358px;" value="http://videos-cdn.mozilla.net/serv/webmademovies/Moz_Doc_0329_GetInvolved_ST.webm">
+        <input placeholder="Title" type="text" id="io-video-title" name="io-video-title" class="text"  style="width:358px;" value="" />
+        <textarea placeholder="Description" id="io-video-description" style="width:358px;height:85px"  class="text"></textarea>
+        <button class="ui-menu-controls" data-control="remove" >Delete</button>
+      </div>
     </div>
   </header>
 </div> 

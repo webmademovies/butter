@@ -413,7 +413,8 @@
         autosaveEnabled = true,
         AUTOSAVE_INTERVAL = 30000;
 
-        openDialogs = 0;
+        openDialogs = 0,
+        tempVideoUrl = "";
 
         console.log ($ioVideoTitle.val());
     
@@ -464,11 +465,6 @@
 
     //  Decorate UI buttons
     $("button,.ui-menu-controls").button();
-
-    //  Render accordion panels
-    $(".ui-accordion-panel").accordion({
-      fillSpace:  true
-    }).css("marginTop", "-1px");
 
     //  Render menusets ( create with: button + ul )
     $(".ui-menuset").each( function() {
@@ -551,21 +547,17 @@
         stageWidth
       );
 
-      var $drawers = $("#ui-accordion-tools h3.ui-accordion-header"),
-          $uiPanelPlugins = $("#ui-panel-plugins"),
+      var $uiPanelPlugins = $("#ui-panel-plugins"),
           outerWest = $(".outer-west").height(),
-          heightDiff = $("#ui-panel-video").height(),
-          headerHeight = $drawers.height();
+          heightDiff = $("#ui-panel-video").height();
 
       $uiPanelPlugins
         .height( outerWest - heightDiff )
           .css("margin-top", "5px");
 
-      $(".ui-accordion-panel div")
+      $(".ui-command-panel div")
         .height(
-          outerWest - heightDiff - (
-            headerHeight * ( $drawers.length + 2 )
-          )
+          outerWest - heightDiff - ( 50 )
         );
 
       //  Set Scrubber Height
@@ -754,9 +746,19 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+            if( $ioVideoUrl.val() == "baseplayer"  ){
+              callback && callback();
 
+              //  Allows other unrelated parts of the
+              //  application to react when a video is ready
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" );
 
+              //  clear the interval
+              clearInterval( onReadyInterval );
+            }
+            else if ( $p.video.readyState >= 2 && !isNaN( $p.video.duration )  ) {
+              $p.pause();
             //console.log("$p.video.readyState >= 2 && $p.video.duration", $p.video.duration);
 
               //  execute callback if one was given
@@ -783,7 +785,6 @@
 
             //  When ready, draw the timeline
             this.drawTimeLine( $p.video.duration );
-
             //  execute callback if one was given
             callback && callback();
 
@@ -807,11 +808,15 @@
               $v.remove();
             }
 
-            $video = $( "<video/>", {
+            if( $ioVideoUrl.val().search(/youtube/i) <= 0 && $ioVideoUrl.val().search(/vimeo/i) <= 0 && $ioVideoUrl.val().search(/soundcloud/i) <= 0 && $ioVideoUrl.val() != "baseplayer" ){
 
-              id: "video"
+              $video = $( "<video/>", {
 
-            }).prependTo( "#ui-panel-video" );
+                id: "video"
+
+              }).prependTo( "#video-div" );
+
+            }
 
           },
 
@@ -820,13 +825,13 @@
           },
 
           timescale: function() {
+
             TrackEditor.deleteCanvas( "ui-tracks-time", "ui-tracks-time-canvas" );
           }
         },
 
         loadVideoFromUrl: function( callback ) {
-
-
+         document.getElementById("video-div").innerHTML = " ";
           $doc.trigger( "videoLoadStart" );
 
 
@@ -841,8 +846,42 @@
               netReadyInt,
               timelineReadyFn;
 
-
+          tempVideoUrl = $ioVideoUrl.val();
           this.unload.video();
+
+          if( url == "baseplayer" ) {
+            $popcorn = Popcorn ( Popcorn.baseplayer() );
+            $popcorn._resource = document.getElementById('video-div');
+            $popcorn.play();
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+            }, 13);
+          } else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
+            if( url.search(/youtube/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: 430, height: 300 } ) );
+              $popcorn.play();
+            }
+            else if( url.search(/vimeo/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.vimeo( "video-div", url, {
+                css: {
+                  width: "430px",
+                  height: "300px"
+                }
+              }));
+              $popcorn.play();
+            }
+            else if( url.search(/soundcloud/i) >= 0 ){
+              $popcorn = Popcorn( Popcorn.soundcloud( "video-div", url) );
+              $popcorn.play();
+            }
+            setTimeout( function () {
+
+              self.timeLineReady( $popcorn, timelineReadyFn );
+
+          }, 13);
+          } else {
 
 
           //  Create a new source element and append to the video element
@@ -856,9 +895,7 @@
           //  Store the new Popcorn object in the cache reference
           $popcorn = Popcorn("#video");
 
-          //  Ensure that the network is ready
           netReadyInt = setInterval( function () {
-
 
             //  Firefox is an idiot
             if ( $popcorn.video.currentSrc === url ) {
@@ -869,7 +906,7 @@
             }
 
           }, 13);
-
+          }
 
           //  When new video and timeline are ready
           timelineReadyFn = function() {
@@ -885,7 +922,6 @@
 
             $ioVideoTitle.val("New Project");
             $ioVideoDesc.val("Project Description");
-
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -909,38 +945,51 @@
             //  Destroy scrubber draggable
             $scrubberHandle.draggable("destroy");
 
+            (function() {
+              //storing pause/play state when scrubber is dragged
+              var wasPaused = false;
+              
+              //  Create scrubber draggable
+              $scrubberHandle.draggable({
 
-            //  Create scrubber draggable
-            $scrubberHandle.draggable({
-
-              scroll: true,
-              scrollSensitivity: 50,
-              scrollSpeed: 200,
+                scroll: true,
+                scrollSensitivity: 50,
+                scrollSpeed: 200,
 
 
-              axis: "x",
-              containment: "#ui-track-editting",
+                axis: "x",
+                containment: "#ui-track-editting",
 
-              grid: [ increment / 8, 0 ],
-              //distance: increment / 4 / 2,
-              start: function() {
-                TrackEditor.isScrubbing = true;
-              },
-              stop: function() {
-                TrackEditor.isScrubbing = false;
-              },
-              drag: function( event, ui ) {
+                grid: [ increment / 8, 0 ],
+                //distance: increment / 4 / 2,
+                start: function() {
+                  TrackEditor.isScrubbing = true;
+                  if ( !$popcorn.media.paused ) {
+                    $popcorn.media.pause();
+                    wasPaused = true;
+                  }
+                },
+                stop: function() {
+                  TrackEditor.isScrubbing = false;
+                  if (wasPaused) { 
+                    $popcorn.media.play();
+                    wasPaused = false;
+                  }                  
+                },
+                drag: function( event, ui ) {
+                !$popcorn.media.paused && $popcorn.media.pause();
 
-                //console.log( ui, ui.offset.left );
-                var scrubPosition = ui.position.left  - $tracktimecanvas.position().left,
-                    updateTo = $popcorn.video.duration / $tracktimecanvas.innerWidth() * scrubPosition,
-                    quarterTime = _( updateTo ).fourth();
+                  //console.log( ui, ui.offset.left );
+                  var scrubPosition = ui.position.left  - $tracktimecanvas.position().left,
+                      updateTo = $popcorn.video.duration / $tracktimecanvas.innerWidth() * scrubPosition,
+                      quarterTime = _( updateTo ).fourth();
 
-                //  Force the time to be in quarters of a second
-                $popcorn.video.currentTime = quarterTime;
+                  //  Force the time to be in quarters of a second
+                  $popcorn.video.currentTime = quarterTime;
 
-              }
-            });
+                }
+              });
+            })()
 
             $popcorn.video.currentTime = 0;
 
@@ -948,10 +997,9 @@
 
             //  Listen on timeupdates
             $popcorn.listen( "timeupdate", function( event ) {
-
               //  Updates the currenttime display
               $ioCurrentTime.val(function() {
-
+                
                 var $this = $(this),
                     prop = _( this.id.replace("io-", "") ).camel(),
                     val = $popcorn[ prop ]();
@@ -1049,9 +1097,8 @@
 
             });
 
-            //  Trigger timeupdate to initialize the current time display
+            //  Trigger timeupdate to initialize the current time disp lay
             $popcorn.trigger( "timeupdate" );
-
 
             //  If a callback was provided, fire now
             callback && callback();
@@ -1158,8 +1205,8 @@
 
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 800;
           //TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
-          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
+          TrackEditor.timeLineWidth = Math.ceil( Math.ceil( duration ) / 30 ) * 1600;
 
           if ( TrackEditor.timeLineWidth > 32767 ) {
 
@@ -1239,6 +1286,7 @@
             }
 
             context.stroke();
+
           }
         }
       };
@@ -1354,6 +1402,12 @@
             target: this.id + "-container"
 
           });
+
+          if ( PLUGIN_DEFAULTS[ trackType ] ) {
+
+            _.extend( startWith, PLUGIN_DEFAULTS[ trackType ] );
+
+          }
 
           //  Explicitly augment the starting object with all manifest props
           _.forEach( trackManifest.options, function( obj, key ) {
@@ -1900,18 +1954,8 @@
 
       },
       save: function( autosaveTitle ) {
-
+ 
         autosaveTitle = autosaveTitle || false;
-
-        if ( !$popcorn || !$popcorn.data ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Video Loaded",
-            message: "I cannot add a Track Event - there is no movie loaded."
-          });
-
-          return;
-        }
 
         var store = new TrackStore(),
             title = autosaveTitle || $ioVideoTitle.val(),
@@ -1921,18 +1965,7 @@
             layout = $layoutlist.attr( "data-layout" ),
             slug;
 
-
-        if ( !title ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Title",
-            message: "You will need to add a title in order to save your project."
-          });
-
-          return;
-        }
-
-
+        !title ? title = "Butter " + new Date() : title;
         slug = _( title ).slug();
 
 
@@ -1944,20 +1977,8 @@
         store.Autosave( autosaveTitle );
 
 
-        if ( !store.read( slug ) ) {
-
-         //console.log("creating....");
-
-          store.create( $popcorn.data.trackEvents.byStart );
-
-        } else {
-
-         //console.log("updating....");
-          store.update( slug, $popcorn.data.trackEvents.byStart );
-
-        }
-
-
+        //  Removed the if statement and creation of slug as we will always have a title now
+        store.update( slug, $popcorn.data.trackEvents.byStart );
 
         //  Reload/update menu
         TrackMeta.menu.load( "#ui-user-videos" );
@@ -2127,6 +2148,17 @@
 
 
     var PLUGIN_BLACKLIST = ['openmap', 'mustache', 'lowerthird'];
+    var PLUGIN_DEFAULTS = {
+
+      wikipedia: {
+        
+        src: 'http://en.wikipedia.org/wiki/Mozilla',
+        lang: 'en',
+
+      },
+
+    };
+
     //  Load plugins to ui-plugin-select-list
     _.each( Popcorn.registry, function( plugin, v ) {
       // TODO: convert to templates
@@ -2172,6 +2204,32 @@
       });
     });
 
+    $( "#prj-details" ).click( function () {
+      var tmpUrl = $ioVideoUrl.val(),
+          tmpTitle = $ioVideoTitle.val(),
+          tmpDescr = $ioVideoDesc.val();
+      $( "#prjDiv" ).dialog ( {
+        modal: true,
+        title: "Project Details",
+        autoOpen: true,
+        width: 400,
+        height: 435,
+        buttons:
+          {
+            "Close": function() {
+              $ioVideoUrl.val( tmpUrl );
+              $ioVideoTitle.val( tmpTitle );
+              $ioVideoDesc.val( tmpDescr );
+              $( this ).dialog( "close" );
+            },
+            "Save": function() {
+              controls[ "save" ]();
+              $( this ).dialog( "close" );
+            }
+          }
+      });
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
@@ -2185,6 +2243,24 @@
       $li.data( "type",  type );
     });
 
+    //  Render Help menu
+    $( "#help-btn" ).click( function () {
+      var helpDiv = document.createElement( "div" );
+      helpDiv.innerHTML = "<p>[ Shift + Click ] on a track event to Delete it.</p>" +
+                          "<p>[ Shift + Right or Left ] in the time display to jump to the next frame.</p>";
+      $( helpDiv ).dialog ( {
+        modal: true,
+        title: "Help",
+        autoOpen: true,
+        width: 400,
+        height: 435,
+        buttons: {
+          "Close": function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+    });
 
     //  Bind layout picker
     $layoutlist.delegate( "li", "click", function () {
@@ -2341,7 +2417,11 @@
           var $videoDiv = $("<div/>", { className: "butter-video-player" } ),
               $videoClone = $clone.children("video").clone();
 
-              $videoClone.attr("controls", "controls");
+          $videoClone.attr("autobuffer", "true");
+          $videoClone.attr("preload", "auto");
+          
+          //this forces controls="true" instead of controls="" (bug?)
+          $videoClone[0].setAttribute("controls", "true");
 
           $videoDiv
             .append( '\n        <h1 id="videoTitle">' + $ioVideoTitle.val() + '</h1>\n        ')
@@ -2604,7 +2684,7 @@
     //  to reset the scrubber position
     $win.bind( "resize", function( event ) {
 
-      if ( $popcorn.video ) {
+      if ( $popcorn && $popcorn.video ) {
         $popcorn.trigger( "timeupdate" );
       }
     });
