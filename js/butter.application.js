@@ -410,14 +410,11 @@
 
         // Autosaving
         autosaveInterval = -1,
-        autosaveIndex = 0,
-        autosaveEnabled = true, 
-        MAX_AUTOSAVES = 5,
+        autosaveEnabled = true,
         AUTOSAVE_INTERVAL = 30000;
 
         openDialogs = 0,
         tempVideoUrl = "";
-
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
       if ( event.type === "dialogopen" ) {
@@ -921,8 +918,8 @@
                 increment = Math.round( $tracktimecanvas.width() / $popcorn.video.duration );
 
 
-            $ioVideoTitle.val("");
-            $ioVideoDesc.val("");
+            $ioVideoTitle.val("New Project");
+            $ioVideoDesc.val("Project Description");
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -1839,11 +1836,10 @@
     controls = {
 
       autosave: function() {
-        if ( autosaveEnabled ) {
+        if ( autosaveEnabled && openDialogs === 0 ) {
 
-          var name = "Autosave - " + $ioVideoTitle.val() + autosaveIndex;
+          var name = $ioVideoTitle.val() + "-Autosave";
           controls.save(name);
-          autosaveIndex = (autosaveIndex + 1) % MAX_AUTOSAVES;
 
         } //if
       },
