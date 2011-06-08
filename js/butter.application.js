@@ -747,7 +747,7 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if( $ioVideoUrl.val() == "baseplayer"  ){
+            if( $ioVideoUrl.val() === "baseplayer"  ){
               callback && callback();
 
               //  Allows other unrelated parts of the
@@ -849,7 +849,7 @@
 
 
           this.unload.video();
-          if( url == "baseplayer" ) {
+          if( url === "baseplayer" ) {
             $popcorn = Popcorn ( Popcorn.baseplayer() );
             $popcorn._resource = document.getElementById('video-div');
             $popcorn.play();
