@@ -229,7 +229,8 @@
 
     var stored = TrackStore.getStorageAsObject();
 
-    if( slug ) {
+    if( typeof stored.projects !== "undefined" ) {
+
       if ( stored.projects[ slug ] ) {
 
         delete stored.projects[ slug ];
@@ -396,6 +397,7 @@
 
         $uiStartScreen = $("#ui-start-screen"),
         $helpBtn = $("#help-btn"),
+        $deleteBtn = $("#prjDelete"),
         $uiApplicationMsg = $("#ui-application-error"),
 
         trackMouseState = "mouseup",
@@ -2192,6 +2194,11 @@
       });
     });
 
+    //  Close dialog when the save button is clicked
+    $( "#prjSave" ).click( function () {
+       $( "#prjDiv" ).dialog ( "close" );
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
@@ -2219,6 +2226,27 @@
         buttons: {
           "Close": function() {
             $( this ).dialog( "close" );
+          }
+        }
+      });
+    });
+
+    $deleteBtn.click( function () {
+      var deleteDiv = document.createElement( "div" );
+      deleteDiv.innerHTML = "Are you sure you want to delete?";
+      $( deleteDiv ).dialog ( {
+        modal: true,
+        title: "Delete",
+        autoOpen: true,
+        buttons: {
+          "No": function() {
+            $( this ).dialog( "close" );
+          },
+          "Yes": function() {
+            controls[ "remove" ]();
+            $( "#prjDiv" ).dialog( "close" );
+            $( this ).dialog( "close" );
+
           }
         }
       });
