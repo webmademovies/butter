@@ -2685,7 +2685,7 @@
     //  to reset the scrubber position
     $win.bind( "resize", function( event ) {
 
-      if ( $popcorn.video ) {
+      if ( $popcorn && $popcorn.video ) {
         $popcorn.trigger( "timeupdate" );
       }
     });
