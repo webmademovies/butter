@@ -2196,7 +2196,10 @@
 
     //  Close dialog when the save button is clicked
     $( "#prjSave" ).click( function () {
+      
+      if ( $ioVideoUrl.val() && $ioVideoTitle.val() ) {
        $( "#prjDiv" ).dialog ( "close" );
+      }
     });
 
     //  Render Export menu
