@@ -205,8 +205,12 @@
       <ul id="ui-export-to" class="select-ul is-menu">
       </ul>
 
-      <button id="help-btn" class="ui-menuset">Help</button>
+
       <button id="prj-details" class="ui-menuset">Project Details</button>
+
+      <button id="ui-menu-targets">Target Database</button> 
+
+      <button id="help-btn" class="ui-menuset">Help</button>
 
       <div id="prjDiv" style="display: none">
         <input placeholder="Video Url" type="text" id="io-video-url" name="io-video-url" class="text"
@@ -231,6 +235,18 @@
 </div>
 <div id="ui-application-error" title="">
   <!-- reusable -->
+</div>
+<div id="ui-target-database" title="">
+  <h2>Targets</h2>
+  <p>
+    <select id="ui-target-database-list" size="15">
+    </select>
+    <button id="ui-target-database-remove">Remove</button>
+  </p>
+  <p>
+    <input id="ui-target-database-add-input" type="textbox" />
+    <button id="ui-target-database-add">Add</button>
+  </p>
 </div>
 <div id="ui-start-screen" title="Your Projects:">
   <h2>Your Projects</h2>

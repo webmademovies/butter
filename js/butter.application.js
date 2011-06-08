@@ -290,6 +290,91 @@
 
 
 
+(function( global, document, $, _, Popcorn ) {
+
+  function ObjectDatabase ( selectElement ) {
+
+    var objects = {};
+        numObjects = 0;
+
+    this.add = function ( id, item ) {
+
+      if ( !id  || id === '' ) {
+        return;
+      } //if
+
+      var option;
+
+      if ( !objects[ id ] ) {
+
+        ++numObjects;
+        option = document.createElement('option');
+
+      }
+      else {
+
+        option = objects[ id ].option;
+
+      } //if
+
+      option.innerHTML = id;
+      option.value = id;
+
+      objects[ id ] = {
+        option: option,
+        value: item,
+      };
+
+      selectElement.appendChild( option );
+
+    }; //add
+
+    this.getValue = function ( id ) {
+
+      if ( objects[ id ]) {
+
+        return objects[ id ].value;
+
+      } //if
+
+      return undefined;
+
+    };
+
+    this.getOptionElement = function ( id ) {
+
+      if ( objects[ id ]) {
+
+        return objects[ id ].option;
+
+      } //if
+
+      return undefined;
+
+    };
+
+    this.remove = function ( id ) {
+
+      if ( objects[ id ] ) {
+
+        --numObjects;
+        selectElement.removeChild( objects[ id ].option );
+        delete objects[ id ];
+
+      } //if
+
+    }; //remove
+
+    this.length = function () {
+      return numObjects;
+    }; //length
+
+  } //ObjectDatabase
+
+  global.ObjectDatabase = ObjectDatabase;
+
+})(window, document, $, _, Popcorn);
+
 
 
 (function( global, document, $, _, Popcorn ) {
@@ -413,10 +498,71 @@
         autosaveIndex = 0,
         autosaveEnabled = true, 
         MAX_AUTOSAVES = 5,
-        AUTOSAVE_INTERVAL = 30000;
+        AUTOSAVE_INTERVAL = 30000,
+
+        // Targets/Objects
+        $uiTargetDatabase = $("#ui-target-database"),
+        $uiTargetDatabaseList = $("#ui-target-database-list");
+        targetDatabase = new ObjectDatabase( $uiTargetDatabaseList[ 0 ] );
 
         openDialogs = 0,
         tempVideoUrl = "";
+
+    $uiTargetDatabase.dialog( {
+
+      autoOpen: false,
+      modal: true,
+      width: 400,
+      height: 500,
+      title: "Target Database",
+      buttons: {
+
+        "Close": function ( event, ui ) {
+          $("#ui-target-database-add-input").val('');
+          $(this).dialog( "close" );
+        },
+
+     },
+
+    } );
+
+    $("#ui-target-database-add").click( function ( event, ui ) {
+
+      if ( val === '' ) {
+
+        $("#ui-application-error").html("<div><b>Error:</b> Target names can not be blank.</div>");
+        $uiApplicationMsg.dialog({
+          title: "Input Error",
+          buttons: { "Ok": function () {
+            $uiApplicationMsg.dialog( "close" );
+          }}
+        });
+
+        return;
+
+      }
+      else {
+
+        targetDatabase.add( $("#ui-target-database-add-input").val() , {} );
+        $("#ui-target-database-add-input").val('');
+
+      } //if
+      
+    } );
+
+    $("#ui-target-database-remove").click( function ( event, ui ) {
+
+      targetDatabase.remove( $uiTargetDatabaseList.val() );
+
+    } );
+    
+
+
+    $("#ui-menu-targets").click( function ( event ) {
+
+      $uiTargetDatabase.dialog("open");
+
+    } );
 
     
     $doc.bind("dialogopen dialogclose", function ( event ) {
