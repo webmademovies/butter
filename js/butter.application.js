@@ -1156,6 +1156,7 @@
                 }
               });
 
+console.log("load two");
             TrackEditor.loadVideoFromUrl( function () {
 
               if ( autosaveInterval === -1 ) {
@@ -1950,6 +1951,8 @@
         });
         //  If all passes, continue to load a movie from
         //  a specified URL.
+
+console.log("load one");
         TrackEditor.loadVideoFromUrl(function() {
           audosaveIndex = 0;
           if ( autosaveInterval === -1 ) {
@@ -2076,7 +2079,7 @@
         store.update( slug, $popcorn.data.trackEvents.byStart );
 
         //  Reload/update menu
-        TrackMeta.menu.load( "#ui-user-videos" );
+        //TrackMeta.menu.load( "#ui-user-videos" );
 
 
         if ( !autosaveTitle ) {
