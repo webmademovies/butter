@@ -476,13 +476,32 @@
               end = start + 2,
               // force div to display on a fourth of a second
               width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
-              left = start / $popcorn.duration() * track.getElement().offsetWidth,
-              popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]({
+              left = start / $popcorn.duration() * track.getElement().offsetWidth;
+
+              popcornDefaults = {
                 // may need manifest help here
                 start: start,
                 end: end,
                 target: ui.draggable[ 0 ].id + "-container"
-              }).getTrackEvent( $popcorn.getLastTrackEventId() );
+              },
+
+              defaults = PLUGIN_DEFAULTS[ ui.draggable[ 0 ].id ];
+
+          if ( defaults ) {
+
+            for ( var i in defaults ) {
+
+              if ( defaults.hasOwnProperty(i) ) {
+  
+                popcornDefaults[i] = defaults[i];
+
+              } //if
+
+            } //for
+
+          } //if
+
+          var popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]( popcornDefaults ).getTrackEvent( $popcorn.getLastTrackEventId() );
 
           showEventPreview( popcornTrack );
           $popcorn.media.currentTime += 0.0001;
