@@ -1927,20 +1927,12 @@
             layout = $layoutlist.attr( "data-layout" ),
             slug;
 
-
         if ( !title ) {
-
-          $doc.trigger( "applicationError", {
-            type: "No Title",
-            message: "You will need to add a title in order to save your project."
-          });
-
           return;
-        }
+        } //if
 
 
         slug = _( title ).slug();
-
 
         store.Title( title );
         store.Description( desc );
@@ -2178,29 +2170,54 @@
       });
     });
 
-    $( "#prj-details" ).click( function () {
-      $( "#prjDiv" ).dialog ( {
-        modal: true,
-        title: "Project Details",
-        autoOpen: true,
-        width: 400,
-        height: 435,
-        buttons:
-          {
+    (function () {
+      var oldProjectDetails = $ioVideoDesc.val(),
+          oldTitle = $ioVideoTitle.val(),
+          oldUrl = $ioVideoUrl.val();
+
+      $( "#prj-details" ).click( function () {
+
+        $( "#prjDiv" ).dialog ( {
+
+          modal: true,
+          title: "Project Details",
+          autoOpen: true,
+          width: 400,
+          height: 435,
+          buttons: {
+  
             "Close": function() {
               $( this ).dialog( "close" );
+              $ioVideoUrl.val( oldUrl );
+              $ioVideoDesc.val( oldProjectDetails );
+              $ioVideoTitle.val( oldTitle );
             }
-          }
-      });
-    });
+  
+          } //buttons
 
-    //  Close dialog when the save button is clicked
-    $( "#prjSave" ).click( function () {
+        }); //dialog
+
+      }); //click
+
+      //  Close dialog when the save button is clicked
+      $( "#prjSave" ).click( function () {
       
-      if ( $ioVideoUrl.val() && $ioVideoTitle.val() ) {
-       $( "#prjDiv" ).dialog ( "close" );
-      }
-    });
+        if ( $ioVideoUrl.val() && $ioVideoTitle.val() ) {
+
+          $( "#prjDiv" ).dialog ( "close" );
+
+        }
+        else {
+
+          $doc.trigger( "applicationError", {
+            type: "Save Error",
+            message: "Your project requires a title and video url."
+          });
+
+        } //if
+
+      });
+    })();
 
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
@@ -2235,25 +2252,33 @@
     });
 
     $deleteBtn.click( function () {
+
       var deleteDiv = document.createElement( "div" );
       deleteDiv.innerHTML = "Are you sure you want to delete?";
+
       $( deleteDiv ).dialog ( {
+
         modal: true,
         title: "Delete",
         autoOpen: true,
         buttons: {
+
           "No": function() {
             $( this ).dialog( "close" );
           },
+
           "Yes": function() {
             controls[ "remove" ]();
             $( "#prjDiv" ).dialog( "close" );
             $( this ).dialog( "close" );
 
           }
-        }
-      });
-    });
+
+        } //buttons
+
+      }); //dialog
+
+    }); //deleteBtn.click
 
     //  Bind layout picker
     $layoutlist.delegate( "li", "click", function () {
