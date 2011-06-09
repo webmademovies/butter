@@ -19,6 +19,14 @@ video {
   /*display:block;*/
 }
 
+#ui-target-database-list {
+  width: 90%;
+}
+
+#ui-target-database-add-input {
+  width: 80%;
+}
+
 #ui-loading-html, #ui-export-html, #ui-start-html {
   position: absolute;
   z-index:9996;
