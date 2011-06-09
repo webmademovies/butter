@@ -1140,11 +1140,6 @@
           timelineReadyFn = function() {
 
             global.$popcorn = $popcorn;
-            document.getElementById( "ui-tracklines" ).innerHTML = "";
-            global.$trackLine = new TrackLiner({
-              element: "ui-tracklines",
-              dynamicTrackCreation: true
-            });
 
             //  Store refs to timeline canvas
             var $tracktimecanvas = $("#ui-tracks-time-canvas"),
@@ -1616,6 +1611,11 @@
 
         //  TODO: really validate urls
 
+        document.getElementById( "ui-tracklines" ).innerHTML = "";
+        global.$trackLine = new TrackLiner({
+          element: "ui-tracklines",
+          dynamicTrackCreation: true
+        });
         //  If all passes, continue to load a movie from
         //  a specified URL.
         TrackEditor.loadVideoFromUrl(function() {
