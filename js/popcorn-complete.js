@@ -4083,17 +4083,19 @@ var googleCallback;
         if ( options.target && options.target !== 'Subtitle-container' ) {
           options.container = document.getElementById( options.target );
         } else { // use shared default container
+
           options.container = this.container;
+          this.container.style.zIndex = ( this.media.style.zIndex ? this.media.style.zIndex : 9000 ) + 1;
         }
 
-        var accessibility = document.getElementById( options.accessibilitysrc ),
-            that = this;
+        var accessibility = document.getElementById( options.accessibilitysrc );
+            //that = this;
 
         options.showSubtitle = function() {
           options.container.innerHTML = options.text;
         };
         options.toggleSubtitles = function() {};
-        options.that = this;
+        //options.that = this;
         
         var readyCheck = setInterval(function() {
           if ( !scriptLoaded ) {

@@ -519,6 +519,7 @@
         $themelist = $("#ui-theme"),
         $layoutlist = $("#ui-layout"),
         $exporttolist = $("#ui-export-to"),
+        $importtolist = $("#ui-import-to"),
 
         //  io- prefix ids map to inputs elements
         $ioCurrentTime = $("#io-current-time"),
@@ -768,12 +769,24 @@
             }
           }
 
-          rebuiltEvent.target = trackType + "-container";
+          if ( $targetSelectElem.val() !== "[no target]" ) {
+
+            rebuiltEvent.target = trackType + "-container";
+          } else {
+
+            rebuiltEvent.target = undefined;
+          }
 
           $popcorn[ trackType ]( rebuiltEvent );
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
 
-          outsidePopcornTrack['target-object'] = $targetSelectElem.val();
+          if ( $targetSelectElem.val() !== "[no target]" ) {
+
+            outsidePopcornTrack['target-object'] = $targetSelectElem.val();
+          } else {
+
+            outsidePopcornTrack['target-object'] = undefined;
+          }
 
           removedTrack.pluginOptions.id = outsidePopcornTrack._id;
           track.addTrackEvent( removedTrack );
@@ -878,7 +891,11 @@
         } //for
 
         label = $( "<label/>" ).attr( "for", "target" ).text( "Target" );
-
+        var $option = $( "<option/>", {
+            value: undefined,
+            text: "[no target]",
+          });
+        $option.appendTo( $targetSelectElem );
         _.each( targetDatabase.getObjects(), function( target, id ) {
 
           var $option = $( "<option/>", {
@@ -890,7 +907,7 @@
           $option.appendTo( $targetSelectElem );
 
         });
-
+        
         $targetSelectElem.appendTo(label);
         outsidePopcornTrack[ 'target-object' ] && ($targetSelectElem[0].value = outsidePopcornTrack[ 'target-object ']);
         label.appendTo( "#ui-track-event-editor" );
@@ -2273,6 +2290,11 @@
         lang: 'en',
 
       },
+      subtitle: {
+
+        target: undefined
+      
+      }
 
     };
 
@@ -2379,6 +2401,19 @@
       });
     })();
 
+    //  Render Import menu
+    _.each( [ "Universal Subtitles", "Project" ], function ( key ) {
+      var type = key.split(/\s/)[0].toLowerCase(),
+      $li = $("<li/>", {
+
+        html: '<h4><img class="icon" src="img/' + type + '.png">' + key + "</h4>",
+        className: "select-li clickable"
+
+      }).appendTo( "#ui-import-to" );
+
+      $li.data( "type",  type );
+    });
+
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
       var type = key.split(/\s/)[0].toLowerCase(),
@@ -2465,6 +2500,99 @@
     //  THIS IS THE WORST CODE EVER.
     //  TODO: MOVE OUT TO FUNCTION DECLARATION - MAJOR ABSTRACTION
     //  Export options list event
+    $importtolist.delegate( "li", "click", function () {
+
+      if ( !$popcorn || !$popcorn.data ) {
+
+        $doc.trigger( "applicationError", {
+          type: "No Video Loaded",
+          message: "I cannot export your movie - there is no video loaded."
+        });
+
+        return;
+      }
+
+      var elseif = {
+        universal: function() {
+
+          var $select = $("<select/>");
+          var languages = {"English":"en","Albanian":"sq","Arabic (Saudi Arabia)":"ar-sa","Arabic (Iraq)":"ar-iq","Arabic (Egypt)":"ar-eg","Arabic (Libya)":"ar-ly","Arabic (Algeria)":"ar-dz","Arabic (Morocco)":"ar-ma","Arabic (Tunisia)":"ar-tn","Arabic (Oman)":"ar-om","Arabic (Yemen)":"ar-ye","Arabic (Syria)":"ar-sy","Arabic (Jordan)":"ar-jo","Arabic (Lebanon)":"ar-lb","Arabic (Kuwait)":"ar-kw","Arabic (U.A.E.)":"ar-ae","Arabic (Bahrain)":"ar-bh","Arabic (Qatar)":"ar-qa","Basque":"eu","Bulgarian":"bg","Belarusian":"be","Catalan":"ca","Chinese (Taiwan)":"zh-tw","Chinese (PRC)":"zh-cn","Chinese (Hong Kong SAR)":"zh-hk","Chinese (Singapore)":"zh-sg","Croatian":"hr","Czech":"cs","Danish":"da","Dutch (Standard)":"nl","Dutch (Belgium)":"nl-be","English (United States)":"en-us","English (United Kingdom)":"en-gb","English (Australia)":"en-au","English (Canada)":"en-ca","English (New Zealand)":"en-nz","English (Ireland)":"en-ie","English (South Africa)":"en-za","English (Jamaica)":"en-jm","English (Caribbean)":"en","English (Belize)":"en-bz","English (Trinidad)":"en-tt","Estonian":"et","Faeroese":"fo","Farsi":"fa","Finnish":"fi","French (Standard)":"fr","French (Belgium)":"fr-be","French (Canada)":"fr-ca","French (Switzerland)":"fr-ch","French (Luxembourg)":"fr-lu","Gaelic (Scotland)":"gd","Irish":"ga","German (Standard)":"de","German (Switzerland)":"de-ch","German (Austria)":"de-at","German (Luxembourg)":"de-lu","German (Liechtenstein)":"de-li","Greek":"el","Hebrew":"he","Hindi":"hi","Hungarian":"hu","Icelandic":"is","Indonesian":"id","Italian (Standard)":"it","Italian (Switzerland)":"it-ch","Japanese":"ja","Korean":"ko","Korean (Johab)":"ko","Latvian":"lv","Lithuanian":"lt","Macedonian (FYROM)":"mk","Malaysian":"ms","Maltese":"mt","Norwegian (Bokmal)":"no","Norwegian (Nynorsk)":"no","Polish":"pl","Portuguese (Brazil)":"pt-br","Portuguese (Portugal)":"pt","Rhaeto-Romanic":"rm","Romanian":"ro","Romanian (Republic of Moldova)":"ro-mo","Russian":"ru","Russian (Republic of Moldova)":"ru-mo","Sami (Lappish)":"sz","Serbian (Cyrillic)":"sr","Serbian (Latin)":"sr","Slovak":"sk","Slovenian":"sl","Sorbian":"sb","Spanish (Spain)":"es","Spanish (Mexico)":"es-mx","Spanish (Guatemala)":"es-gt","Spanish (Costa Rica)":"es-cr","Spanish (Panama)":"es-pa","Spanish (Dominican Republic)":"es-do","Spanish (Venezuela)":"es-ve","Spanish (Colombia)":"es-co","Spanish (Peru)":"es-pe","Spanish (Argentina)":"es-ar","Spanish (Ecuador)":"es-ec","Spanish (Chile)":"es-cl","Spanish (Uruguay)":"es-uy","Spanish (Paraguay)":"es-py","Spanish (Bolivia)":"es-bo","Spanish (El Salvador)":"es-sv","Spanish (Honduras)":"es-hn","Spanish (Nicaragua)":"es-ni","Spanish (Puerto Rico)":"es-pr","Sutu":"sx","Swedish":"sv","Swedish (Finland)":"sv-fi","Thai":"th","Tsonga":"ts","Tswana":"tn","Turkish":"tr","Ukrainian":"uk","Urdu":"ur","Venda":"ve","Vietnamese":"vi","Xhosa":"xh","Yiddish":"ji","Zulu ":"zu"};
+
+          Popcorn.forEach( languages, function( value, key ) {
+
+            var $option = $("<option/>", {
+              value: value,
+              innerHTML: key
+            });
+
+            $select.append( $option );
+          });
+
+          var $div = $("#ui-user-input");
+          $div.append("Choose your language: ");
+          $div.append($select);
+
+          $div.dialog({
+
+            model: true,
+            autoOpen: true,
+            title: "Import Butter Project",
+
+            beforeClose: function() {
+              $("#ui-user-input").empty();
+            },
+
+            buttons: {
+
+             "Close": function() {
+                $(this).dialog( "close" );
+              },
+
+              "Ok": function() {
+                $(this).dialog( "close" );
+
+                var videoURL = $ioVideoUrl.val();
+
+                $.getJSON( "http://www.universalsubtitles.org/api/subtitles/?video_url=" + videoURL + "&language=" + $select.val() + "&callback=?", function( data ) {
+
+                  if ( !data.length ) {
+
+                    $doc.trigger( "applicationNotice", {
+
+                      message: "Sorry, no subtitles in this language associated with this video."
+
+                    });
+
+                    return;
+                  }
+
+                  for ( var i = 0, subsLength = data.length; i < subsLength; i++ ) {
+
+                    addTrackEvent({
+                      start: data[ i ].start_time,
+                      end: data[ i ].end_time,
+                      text: data[ i ].text,
+                      type: "subtitle"
+                    });
+                  }
+
+                  var $subDiv = document.getElementById( "subtitlediv" ) || document.createElement( "div" );
+                  $subDiv.style.zIndex = 9001;
+                });
+              },
+   
+            }
+          });
+        },
+        project: function() {
+
+          controls.import();
+        }
+      };
+
+      elseif[$(this).data( "type" )]();
+    });
+
     $exporttolist.delegate( "li", "click", function () {
 
 
