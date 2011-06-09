@@ -1449,7 +1449,9 @@
 
               //console.log("TrackEvent clicked");
               if ( !event.shiftKey ) {
+
                 $("#" + trackEvent.target).show();
+                $("#ui-trackTitle-div").html("<h2>" + trackEvent.target + "</h2>");
                 $("#ui-track-div").append($("#" + trackEvent.target));
                 $("#ui-track-div").children().each(function(){
                   console.log(this.id + " " + trackEvent.target);
