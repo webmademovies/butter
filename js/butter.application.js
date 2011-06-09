@@ -1435,6 +1435,27 @@
 
           }
 
+          function showTrackPreview () {
+
+            $("#" + trackEvent.target).show();
+            $("#ui-trackTitle-div").html("<h2>" + trackEvent.target + "</h2>");
+            $("#ui-track-div").append($("#" + trackEvent.target));
+
+            $("#ui-track-div").children().each(function(){
+
+              if( this.id !== trackEvent.target ){
+                $("#" + this.id).hide();
+              }
+              else {
+                $("#" + this.id).show();
+              } //if
+
+            });
+
+          } //showTrackPreview
+
+          showTrackPreview();
+
           //  TODO: when a track of this type already exists...
           //  ensure we need to actually make "track" into something
 
@@ -1450,17 +1471,8 @@
               //console.log("TrackEvent clicked");
               if ( !event.shiftKey ) {
 
-                $("#" + trackEvent.target).show();
-                $("#ui-trackTitle-div").html("<h2>" + trackEvent.target + "</h2>");
-                $("#ui-track-div").append($("#" + trackEvent.target));
-                $("#ui-track-div").children().each(function(){
-                  console.log(this.id + " " + trackEvent.target);
-                  if(this.id != trackEvent.target){
-                    $("#" + this.id).hide();
-                  } else {
-                    $("#" + this.id).show();
-                  }
-                });
+                showTrackPreview();
+        
                 $editor.dialog({
                   autoOpen: false,
                   title: "Edit " + _( trackType ).capitalize(),
