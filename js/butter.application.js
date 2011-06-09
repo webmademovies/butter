@@ -1156,7 +1156,6 @@
                 }
               });
 
-console.log("load two");
             TrackEditor.loadVideoFromUrl( function () {
 
               if ( autosaveInterval === -1 ) {
@@ -1951,8 +1950,6 @@ console.log("load two");
         });
         //  If all passes, continue to load a movie from
         //  a specified URL.
-
-console.log("load one");
         TrackEditor.loadVideoFromUrl(function() {
           audosaveIndex = 0;
           if ( autosaveInterval === -1 ) {
