@@ -95,11 +95,12 @@
     this.layout = layout || null;
     this.data = null;
     this.autosave = autosave || false;
+    this.targets = null;
 
     return this;
   }
 
-  TrackStore.properties = [ "title", "description", "remote", "theme", "layout", "autosave" ];
+  TrackStore.properties = [ "title", "description", "remote", "theme", "layout", "autosave", "targets" ];
 
 
   //  Property getter/setter factory
@@ -298,8 +299,9 @@
 
   function ObjectDatabase ( selectElement ) {
 
-    var objects = {};
-        numObjects = 0;
+    var objects = {},
+        numObjects = 0,
+        that = this;
 
     // From Jason Bunting
     var replaceHTMLChars = (function() {
@@ -357,6 +359,25 @@
       selectElement.appendChild( option );
 
     }; //add
+
+    this.clear = function () {
+      
+      for ( var o in objects ) {
+        selectElement.removeChild( objects[o].option );
+        delete objects[o];
+      } //for
+
+    }; //clear
+
+    this.clone = function ( objects ) {
+    
+      for ( var o in objects ) {
+
+        that.add( o, {} );
+
+      } //for
+
+    }; //clone
 
     this.getObjects = function () {
 
@@ -1107,6 +1128,10 @@
 
             //console.log(project);
 
+            targetDatabase.clear();
+            targetDatabase.clone( project.targets );
+
+
             $ioVideoUrl.val( project.remote );
 
             $layoutlist
@@ -1153,7 +1178,6 @@
               //  Load meta data
               $ioVideoTitle.val( project.title );
               $ioVideoDesc.val( project.description );
-
 
             });
           },
@@ -1902,6 +1926,7 @@
         volumeTo = 0;
 
 
+        targetDatabase.clear();
 
 
         //  If no remote url given, stop immediately
@@ -2044,6 +2069,7 @@
         store.Theme( theme );
         store.Layout( layout );
         store.Autosave( autosaveTitle );
+        store.Targets( targetDatabase.getObjects() );
 
 
         //  Removed the if statement and creation of slug as we will always have a title now
@@ -2551,6 +2577,7 @@
         return;
       }
 
+
       //  Compile html
       $html.each( function( iter, elem ) {
 
@@ -2588,6 +2615,7 @@
         if ( $clone.find(".ui-plugin-pane").length ) {
 
           $clone.find(".ui-plugin-pane").each(function () {
+            console.log(2);
 
             var $this = $(this);
 
@@ -2641,6 +2669,7 @@
         tempStore.Theme( $themelist.attr( "data-theme" ) );
         tempStore.Layout( $layoutlist.attr( "data-layout" ) );
         tempStore.data = deserial;
+        tempStore.targets = targetDatabase.getObjects();
         compiled = JSON.stringify( tempStore );
       }
       else {
