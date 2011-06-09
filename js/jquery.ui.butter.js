@@ -10,9 +10,9 @@
  *
  */
 
-(function( global, document, jQuery, _, Popcorn ) { 
+(function( global, document, jQuery, _, Popcorn ) {
 
-  var auto    = 100,
+  /*var auto    = 100,
       eResize = 101,
       wResize = 102,
       drag    = 103,
@@ -233,6 +233,7 @@
     },
 
     _init: function( ) {
+console.log("init called");
 
       this.index = trackCount++;
 
@@ -766,7 +767,7 @@
         this._draw();
       }
     }
-  });
+  });*/
 
 
 }( this, this.document, this.jQuery, this._, this.Popcorn ));

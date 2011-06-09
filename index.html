@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -35,12 +36,13 @@
   <script src="js/jquery-ui.min.js"></script>
   <script src="js/jquery.ui.butter.js"></script>
   <script src="js/jquery.scrolling-events.js"></script>
+  <script src="js/trackLiner.js"></script>
 
 
   <!-- Initially at bottom of document, however causes FOUC -->
 
   <!-- Popcorn plugins -->
-  <script src="http://popcornjs.org/code/dist/popcorn-complete.js"></script>
+  <script src="js/popcorn-complete.js"></script>
   <!--
   <script src="popcorn-js/popcorn.js"></script>
   <script src="popcorn-js/plugins/googlemap/popcorn.googlemap.js"></script>
@@ -80,7 +82,7 @@
 
   <div class="ui-layout-north">
   
-    <div id="ui-panel-preview" class="span-17 last" data-export="true">
+    <div style="display: none" id="ui-panel-preview" class="span-17 last" data-export="true">
 			<ul class="sortable">
 
 			</ul>
@@ -96,6 +98,14 @@
       <div id="footnote-container" data-plugin="footnote" class="ui-plugin-pane span-17 last" style="height:52px;width:670px;"></div>  
 			-->
     </div>  
+    <div id="preview-pane" style="height: 395px" >
+      <div id="ui-trackTitle-div"></div>
+      <div id="ui-track-div">
+       <!-- reusable -->
+      </div>
+      <div id="ui-track-event-editor" title="Edit Track Event">
+      </div>
+    </div>
   </div> 
   
   <div class="ui-layout-south">
@@ -108,6 +118,7 @@
         <div id="ui-tracks-time">
           <canvas id="ui-tracks-time-canvas" width="800" height="25"></canvas>
         </div>
+        <div id="ui-tracklines" style="height: 100%;"></div>
       </div>
     </div>  
   
@@ -221,9 +232,7 @@
 </div> 
 
 <!-- Dialogs -->
-<div id="ui-track-event-editor" title="Edit Track Event">
-  <!-- reusable -->
-</div>
+
 <div id="ui-user-input" title="">
   <!-- reusable -->
 </div>
@@ -233,6 +242,7 @@
 <div id="ui-application-error" title="">
   <!-- reusable -->
 </div>
+<button id="saveButton">Ok</button>
 <div id="ui-start-screen" title="Your Projects:">
   <h2>Your Projects</h2>
   
@@ -262,4 +272,5 @@
 
 </body> 
 </html> 
+
 
