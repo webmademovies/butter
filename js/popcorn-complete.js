@@ -4085,7 +4085,7 @@ var googleCallback;
         } else { // use shared default container
 
           options.container = this.container;
-          this.container.style.zIndex = ( this.media.style.zIndex ? this.media.style.zIndex : 9000 ) + 1;
+          this.container.style.zIndex = ( this.media.style && this.media.style.zIndex ? this.media.style.zIndex : 9000 ) + 1;
         }
 
         var accessibility = document.getElementById( options.accessibilitysrc );
