@@ -1140,6 +1140,11 @@
           timelineReadyFn = function() {
 
             global.$popcorn = $popcorn;
+            document.getElementById( "ui-tracklines" ).innerHTML = "";
+            global.$trackLine = new TrackLiner({
+              element: "ui-tracklines",
+              dynamicTrackCreation: true
+            });
 
             //  Store refs to timeline canvas
             var $tracktimecanvas = $("#ui-tracks-time-canvas"),
