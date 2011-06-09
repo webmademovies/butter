@@ -1831,12 +1831,14 @@
       },
 
       load: function() {
+        var videoUri = $ioVideoUrl.val(),
+            raccepts = /(.ogv)|(.mp4)|(.webm)|(.mov)|(.m4v)/gi;
 
+        try {
         seekTo = 0;
         volumeTo = 0;
 
-        var videoUri = $ioVideoUrl.val(),
-            raccepts = /(.ogv)|(.mp4)|(.webm)|(.mov)|(.m4v)/gi;
+
 
 
         //  If no remote url given, stop immediately
@@ -1861,6 +1863,23 @@
             autosaveInterval = setInterval(controls.autosave, AUTOSAVE_INTERVAL);
           }
         });
+       } catch (err){
+          $doc.trigger( "videoLoadComplete" ); 
+
+         if ( /file/.test( location.protocol ) && ( videoUri.search(/youtube/i) >= 0 || videoUri.search(/vimeo/i) >= 0 || videoUri.search(/soundcloud/i) >= 0 ) ) {
+
+            $doc.trigger( "applicationError", {
+              type: "Video needs to be run from a web server",
+              message: "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver."
+            });
+
+         } else {              
+          $doc.trigger( "applicationError", {
+            type: "URL Error",
+            message: "Please check your url"
+          });
+        }   
+      }
       },
 
       import: function() {
