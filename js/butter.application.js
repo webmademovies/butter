@@ -1235,7 +1235,7 @@
     //  Allow TrackMeta to be globally accessible
     global.TrackMeta = TrackMeta;
 
-
+    
     //  Load the workspace menu
     TrackMeta.menu.load( "#ui-user-videos" );
 
@@ -1245,8 +1245,9 @@
 
 
     //  TrackEditor Module - organizes all track event editting logic
+  
     TrackEditor = ( function(global) {
-
+      
       return {
 
         timeLineWidth: 0,
@@ -1265,7 +1266,7 @@
             //  4 is preferrable, but FF reports 3
             //  Firefox gotcha: ready does not mean it knows the duration
             //if ( $p.video.readyState >= 3 && !isNaN( $p.video.duration )  ) {
-            if( $ioVideoUrl.val() == "baseplayer"  ){
+            if( $ioVideoUrl.val() === "baseplayer"  ){
               callback && callback();
 
               //  Allows other unrelated parts of the
@@ -1368,10 +1369,11 @@
           tempVideoUrl = $ioVideoUrl.val();
           this.unload.video();
 
-          if( url == "baseplayer" ) {
+          if( url === "baseplayer" ) {
+
             $popcorn = Popcorn ( Popcorn.baseplayer() );
             $popcorn._resource = document.getElementById('video-div');
-            $popcorn.play();
+
             setTimeout( function () {
 
               self.timeLineReady( $popcorn, timelineReadyFn );
@@ -1813,6 +1815,7 @@
         }
       };
 
+
     })(global);
 
     //   TrackExport Module
@@ -1891,12 +1894,14 @@
       },
 
       load: function() {
+        var videoUri = $ioVideoUrl.val(),
+            raccepts = /(.ogv)|(.mp4)|(.webm)|(.mov)|(.m4v)/gi;
 
+        try {
         seekTo = 0;
         volumeTo = 0;
 
-        var videoUri = $ioVideoUrl.val(),
-            raccepts = /(.ogv)|(.mp4)|(.webm)|(.mov)|(.m4v)/gi;
+
 
 
         //  If no remote url given, stop immediately
@@ -1926,6 +1931,23 @@
             autosaveInterval = setInterval(controls.autosave, AUTOSAVE_INTERVAL);
           }
         });
+       } catch (err){
+          $doc.trigger( "videoLoadComplete" ); 
+
+         if ( /file/.test( location.protocol ) && ( videoUri.search(/youtube/i) >= 0 || videoUri.search(/vimeo/i) >= 0 || videoUri.search(/soundcloud/i) >= 0 ) ) {
+
+            $doc.trigger( "applicationError", {
+              type: "Video needs to be run from a web server",
+              message: "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver."
+            });
+
+         } else {              
+          $doc.trigger( "applicationError", {
+            type: "URL Error",
+            message: "Please check your url"
+          });
+        }   
+      }
       },
 
       import: function() {
@@ -2180,11 +2202,33 @@
         "Start": function() {
           var $this = $(this),
               value = $this.children( "input" ).val();
+          var webServer = document.createElement( "div" );
+          
+          if ( /file/.test( location.protocol ) && ( value.search(/youtube/i) >= 0 || value.search(/vimeo/i) >= 0 || value.search(/soundcloud/i) >= 0 ) ) {
 
-          $this.dialog( "close" );
+            $doc.trigger( "applicationError", {
+              type: "Video needs to be run from a web server",
+              message: "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver."
+            });
 
-          $ioVideoUrl.val( value );
-          $('[data-control="load"]').trigger( "click" );
+           } else {
+
+            $this.dialog( "close" );
+            try {
+              $ioVideoUrl.val( value );
+              $('[data-control="load"]').trigger( "click" );
+            } catch (err){
+              $doc.trigger( "videoReady" );
+              $doc.trigger( "videoLoadComplete" ); 
+              $uiStartScreen.dialog( "open" ); 
+
+              $doc.trigger( "applicationError", {
+                type: "URL Error",
+                message: "Please check your url"
+              });
+            }
+            
+          }
         }
       }
     });
