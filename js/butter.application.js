@@ -26,7 +26,8 @@
     },
     //  Create a slug string, ex: "This is a test" > "this-is-a-test"
     slug: function(str) {
-      return str.toLowerCase().match(/[a-z0-9]+/ig).join("-");
+      str ? str.toLowerCase().match(/[a-z0-9]+/ig).join("-") : str;
+      return str;
     },
     //  Zero pads a number
     pad: function( number ) {
@@ -228,10 +229,13 @@
 
     var stored = TrackStore.getStorageAsObject();
 
-    if ( stored.projects[ slug ] ) {
+    if( typeof stored.projects !== "undefined" ) {
 
-      delete stored.projects[ slug ];
+      if ( stored.projects[ slug ] ) {
 
+        delete stored.projects[ slug ];
+
+      }
     }
 
     localStorage.setItem(
@@ -392,6 +396,8 @@
 
 
         $uiStartScreen = $("#ui-start-screen"),
+        $helpBtn = $("#help-btn"),
+        $deleteBtn = $("#prjDelete"),
         $uiApplicationMsg = $("#ui-application-error"),
 
         trackMouseState = "mouseup",
@@ -918,8 +924,8 @@
                 increment = Math.round( $tracktimecanvas.width() / $popcorn.video.duration );
 
 
-            $ioVideoTitle.val("New Project");
-            $ioVideoDesc.val("Project Description");
+            //$ioVideoTitle.val("New Project");
+            //$ioVideoDesc.val("Project Description");
 
             //  Empty active track cache
             if ( _.size( activeTracks ) ) {
@@ -1934,7 +1940,6 @@
             title = $ioVideoTitle.val(),
             slug = _( title ).slug();
 
-
         store.remove( slug, function () {
 
 
@@ -1963,8 +1968,8 @@
             slug;
 
         !title ? title = "Butter " + new Date() : title;
-        slug = _( title ).slug();
 
+        slug = _( title ).slug();
 
         store.Title( title );
         store.Description( desc );
@@ -2201,31 +2206,62 @@
       });
     });
 
-    $( "#prj-details" ).click( function () {
-      var tmpUrl = $ioVideoUrl.val(),
-          tmpTitle = $ioVideoTitle.val(),
-          tmpDescr = $ioVideoDesc.val();
-      $( "#prjDiv" ).dialog ( {
-        modal: true,
-        title: "Project Details",
-        autoOpen: true,
-        width: 400,
-        height: 435,
-        buttons:
-          {
+    (function () {
+
+      var oldProjectDetails,
+          oldTitle,
+          oldUrl;
+
+      $( "#prj-details" ).click( function () {
+
+        $( "#prjDiv" ).dialog ( {
+
+          modal: true,
+          title: "Project Details",
+          autoOpen: true,
+          width: 400,
+          height: 435,
+
+          open: function () {
+            oldProjectDetails = $ioVideoDesc.val();
+            oldTitle = $ioVideoTitle.val();
+            oldUrl = $ioVideoUrl.val();
+          },
+
+          buttons: {
+  
             "Close": function() {
-              $ioVideoUrl.val( tmpUrl );
-              $ioVideoTitle.val( tmpTitle );
-              $ioVideoDesc.val( tmpDescr );
               $( this ).dialog( "close" );
-            },
-            "Save": function() {
-              controls[ "save" ]();
-              $( this ).dialog( "close" );
+              $ioVideoUrl.val( oldUrl );
+              $ioVideoDesc.val( oldProjectDetails );
+              $ioVideoTitle.val( oldTitle );
             }
-          }
+  
+          } //buttons
+
+        }); //dialog
+
+      }); //click
+
+      //  Close dialog when the save button is clicked
+      $( "#prjSave" ).click( function () {
+      
+        if ( $ioVideoUrl.val() && $ioVideoTitle.val() ) {
+
+          $( "#prjDiv" ).dialog ( "close" );
+
+        }
+        else {
+
+          $doc.trigger( "applicationError", {
+            type: "Save Error",
+            message: "Your project requires a title and video url."
+          });
+
+        } //if
+
       });
-    });
+    })();
 
     //  Render Export menu
     _.each( [ "Code (Popcorn)", "Project", "Full Page", "Embeddable Fragment", "Preview" ], function ( key ) {
@@ -2258,6 +2294,35 @@
         }
       });
     });
+
+    $deleteBtn.click( function () {
+
+      var deleteDiv = document.createElement( "div" );
+      deleteDiv.innerHTML = "Are you sure you want to delete?";
+
+      $( deleteDiv ).dialog ( {
+
+        modal: true,
+        title: "Delete",
+        autoOpen: true,
+        buttons: {
+
+          "No": function() {
+            $( this ).dialog( "close" );
+          },
+
+          "Yes": function() {
+            controls[ "remove" ]();
+            $( "#prjDiv" ).dialog( "close" );
+            $( this ).dialog( "close" );
+
+          }
+
+        } //buttons
+
+      }); //dialog
+
+    }); //deleteBtn.click
 
     //  Bind layout picker
     $layoutlist.delegate( "li", "click", function () {
