@@ -2171,9 +2171,10 @@
     });
 
     (function () {
-      var oldProjectDetails = $ioVideoDesc.val(),
-          oldTitle = $ioVideoTitle.val(),
-          oldUrl = $ioVideoUrl.val();
+
+      var oldProjectDetails,
+          oldTitle,
+          oldUrl;
 
       $( "#prj-details" ).click( function () {
 
@@ -2184,6 +2185,13 @@
           autoOpen: true,
           width: 400,
           height: 435,
+
+          open: function () {
+            oldProjectDetails = $ioVideoDesc.val();
+            oldTitle = $ioVideoTitle.val();
+            oldUrl = $ioVideoUrl.val();
+          },
+
           buttons: {
   
             "Close": function() {
