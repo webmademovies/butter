@@ -1961,7 +1961,7 @@
         //  TODO: really validate urls
 
         document.getElementById( "ui-tracklines" ).innerHTML = "";
-        global.$trackLine = new TrackLiner({
+        $trackLine = new TrackLiner({
           element: "ui-tracklines",
           dynamicTrackCreation: true
         });
