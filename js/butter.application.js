@@ -2294,6 +2294,13 @@
 
         target: undefined
       
+      },
+      code: {
+
+        onStart: function() {},
+        onEnd: function() {},
+        onFrame: function() {}
+      
       }
 
     };
