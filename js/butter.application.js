@@ -586,17 +586,15 @@
 
     function showEventPreview ( trackEvent ) {
 
-      $("#" + trackEvent.target).show();
       $("#ui-trackTitle-div").html("<h2>" + trackEvent.target + "</h2>");
-      $("#ui-track-div").append($("#" + trackEvent.target));
 
-      $("#ui-track-div").children().each( function() {
+      $(".ui-plugin-pane").each( function() {
 
         if( this.id !== trackEvent.target ) {
-          $( "#" + this.id ).hide();
+          $( document.getElementById( this.id ).parentNode ).hide();
         }
         else {
-          $( "#" + this.id ).show();
+          $( document.getElementById( this.id ).parentNode ).show();
         } //if
 
       });
@@ -769,13 +767,13 @@
             }
           }
 
-          if ( $targetSelectElem.val() !== "[no target]" ) {
+          //if ( $targetSelectElem.val() !== "[no target]" ) {
 
             rebuiltEvent.target = trackType + "-container";
-          } else {
+          //} else {
 
-            rebuiltEvent.target = undefined;
-          }
+          //  rebuiltEvent.target = undefined;
+          //}
 
           $popcorn[ trackType ]( rebuiltEvent );
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
@@ -2289,11 +2287,6 @@
         src: 'http://en.wikipedia.org/wiki/Mozilla',
         lang: 'en',
 
-      },
-      subtitle: {
-
-        target: undefined
-      
       },
       code: {
 
