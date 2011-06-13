@@ -606,7 +606,7 @@
 
       if ( !$("#" + plugin + "-container").length ) {
 
-        $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
+        $("#ui-panel-preview").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container' style='height: 255px;'></div></li>");
         $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
       }
     };
