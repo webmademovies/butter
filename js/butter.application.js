@@ -96,11 +96,12 @@
     this.data = null;
     this.autosave = autosave || false;
     this.targets = null;
+    this.tracks = null;
 
     return this;
   }
 
-  TrackStore.properties = [ "title", "description", "remote", "theme", "layout", "autosave", "targets" ];
+  TrackStore.properties = [ "title", "description", "remote", "theme", "layout", "autosave", "targets", "tracks" ];
 
 
   //  Property getter/setter factory
@@ -152,6 +153,11 @@
             temp[ eventKey ] = prop;
 
           }
+          else if ( eventKey === '_id' ) {
+          
+            temp[ 'id' ] = prop;
+          
+          } //if
 
         });
 
@@ -492,7 +498,7 @@
   $(function() {
 
     var $popcorn,
-        $trackLine = new TrackLiner({
+        $trackLiner = new TrackLiner({
           element: "ui-tracklines",
           dynamicTrackCreation: true
         }),
@@ -572,14 +578,18 @@
 
         // track editing
         manifestElems = {},
-        outsidePopcornTrack;
+        outsidePopcornTrack,
 
-    var addTrackEvent = function( options ) {
+        tracklinerTracks = {};
+
+    global.$trackLiner = $trackLiner;
+
+    var addTrackEvent = function( options, track ) {
 
       // use options.type, but support older options.id
       options.type = options.type || options.id;
       delete options.id;
-      var track = $trackLine.getTrack( "trackLiner0" ) || $trackLine.createTrack();
+      var track = track || $trackLiner.getTrack( "trackLiner0" ) || $trackLiner.createTrack();
 
       track.createTrackEvent( "butterapp", options );
     };
@@ -609,13 +619,17 @@
       if ( !$("#" + plugin + "-container").length ) {
 
         $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
-        $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
+        $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane");//.parent().resizable();
       }
     };
 
-    $trackLine.plugin( "butterapp", {
+    $trackLiner.plugin( "butterapp", {
       // called when a new track is created
       setup: function( track, options, event, ui ) {
+
+        if ( !tracklinerTracks[ track.id() ] ) {
+          tracklinerTracks[ track.id() ] = track;
+        } //if
 
         if ( ui ) {
 
@@ -1141,13 +1155,33 @@
 
           },
 
-          load: function( tracks, project ) {
+          load: function( tracks, project, preserve ) {
 
             //console.log(project);
 
-            targetDatabase.clear();
+            var trackEventMap = project.tracks;
+
+            if ( !preserve ) {
+              targetDatabase.clear();
+              $trackLiner.clear();
+              tracklinerTracks = {};
+            } //if
+
             targetDatabase.clone( project.targets );
 
+            if ( trackEventMap ) {
+
+              for ( var trackName in trackEventMap ) {
+
+                if ( !tracklinerTracks[ trackName ] ) {
+
+                  var track = $trackLiner.createTrack( trackName );
+                  tracklinerTracks[ trackName ] = track;
+                } //if
+
+              } //for
+
+            } //if
 
             $ioVideoUrl.val( project.remote );
 
@@ -1190,7 +1224,7 @@
                 });
               }
 
-              TrackMeta.project.loadWorkspace( tracks );
+              TrackMeta.project.loadWorkspace( tracks, trackEventMap );
 
               //  Load meta data
               $ioVideoTitle.val( project.title );
@@ -1199,7 +1233,7 @@
             });
           },
 
-          loadWorkspace: function( tracks ) {
+          loadWorkspace: function( tracks, trackEventMap ) {
 
             _.each( tracks, function( trackDataObj ) {
 
@@ -1207,7 +1241,23 @@
 
                 var options = _.extend( {}, { type: key }, data );
 
-                addTrackEvent( options );
+                var track;
+                if ( trackEventMap && options.id ) {
+
+                  for ( var trackName in trackEventMap ) {
+
+                    var trackMap = trackEventMap[ trackName ];
+                    if ( trackMap.indexOf( options.id ) > -1 ) {
+                      console.log( trackMap, trackName, options.id, !!tracklinerTracks[ trackName ] );
+                      track = tracklinerTracks[ trackName ] || $trackLiner.createTrack();
+                      break;
+                    } //if
+
+                  } //for
+
+                } //if
+
+                addTrackEvent( options, track );
 
               });
 
@@ -1392,7 +1442,8 @@
         },
 
         loadVideoFromUrl: function( callback ) {
-         document.getElementById("video-div").innerHTML = " ";
+
+          document.getElementById("video-div").innerHTML = " ";
           $doc.trigger( "videoLoadStart" );
 
 
@@ -1407,6 +1458,7 @@
               netReadyInt,
               timelineReadyFn;
 
+
           tempVideoUrl = $ioVideoUrl.val();
           this.unload.video();
 
@@ -1420,7 +1472,8 @@
               self.timeLineReady( $popcorn, timelineReadyFn );
 
             }, 13);
-          } else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
+          }
+          else if( url.search(/youtube/i) >= 0 || url.search(/vimeo/i) >= 0 || url.search(/soundcloud/i) >= 0 ) {
             if( url.search(/youtube/i) >= 0 ){
               $popcorn = Popcorn( Popcorn.youtube( 'video-div', url, { width: 430, height: 300 } ) );
               $popcorn.play();
@@ -1442,32 +1495,32 @@
 
               self.timeLineReady( $popcorn, timelineReadyFn );
 
-          }, 13);
-          } else {
+            }, 13);
+          }
+          else {
 
+            //  Create a new source element and append to the video element
+            $source = $("<source/>", {
 
-          //  Create a new source element and append to the video element
-          $source = $("<source/>", {
+              //type: formatMaps[ type ],
+              src: url
 
-            //type: formatMaps[ type ],
-            src: url
+            }).prependTo( "#video" );
 
-          }).prependTo( "#video" );
+            //  Store the new Popcorn object in the cache reference
+            $popcorn = Popcorn("#video");
 
-          //  Store the new Popcorn object in the cache reference
-          $popcorn = Popcorn("#video");
+            netReadyInt = setInterval( function () {
 
-          netReadyInt = setInterval( function () {
+              //  Firefox is an idiot
+              if ( $popcorn.video.currentSrc === url ) {
 
-            //  Firefox is an idiot
-            if ( $popcorn.video.currentSrc === url ) {
+                self.timeLineReady( $popcorn, timelineReadyFn );
+                clearInterval( netReadyInt );
 
-              self.timeLineReady( $popcorn, timelineReadyFn );
-              clearInterval( netReadyInt );
+              }
 
-            }
-
-          }, 13);
+            }, 13);
           }
 
           //  When new video and timeline are ready
@@ -1479,6 +1532,7 @@
             var $tracktimecanvas = $("#ui-tracks-time-canvas"),
                 $prevTracks = $(".track"),
                 $plugins = $(".ui-plugin-pane"),
+                $uiTrackDiv = $("#ui-track-div"),
                 trackLineDiv = document.getElementById( "ui-tracklines" ),
                 increment = Math.round( $tracktimecanvas.width() / $popcorn.video.duration );
 
@@ -1501,11 +1555,19 @@
 
 
             //  Check for existing elements inside the plugin panes
+            if ( $uiTrackDiv.children().length ) {
+              $uiTrackDiv.children().each( function () {
+                $(this).remove();
+              });
+            } //if
+            
+            /*
             if ( $plugins.children().length ) {
               //$plugins.children().remove();
+              console.log('REMOVING', $plugins.parent()[0].id);
               $plugins.parent().remove();
             }
-
+            */
 
             //  Destroy scrubber draggable
             $scrubberHandle.draggable("destroy");
@@ -1572,7 +1634,6 @@
                 return  formatMaps[ prop ]( _(val).fourth() ) ;
 
               });
-
 
               if ( $popcorn.video.currentTime > 0 ) {
 
@@ -1649,7 +1710,6 @@
                 }, 1 );
 
               }
-
 
               $doc.trigger( "seekComplete", {
                 type: "update",
@@ -1939,57 +1999,55 @@
             raccepts = /(.ogv)|(.mp4)|(.webm)|(.mov)|(.m4v)/gi;
 
         try {
-        seekTo = 0;
-        volumeTo = 0;
+          seekTo = 0;
+          volumeTo = 0;
 
 
-        targetDatabase.clear();
+          targetDatabase.clear();
+          tracklinerTracks = {};
+          $trackLiner.clear();
 
+          //  If no remote url given, stop immediately
+          //if ( !videoUri || !raccepts.test( videoUri ) ) {
+          if ( !videoUri ) {
 
-        //  If no remote url given, stop immediately
-        //if ( !videoUri || !raccepts.test( videoUri ) ) {
-        if ( !videoUri ) {
+            $doc.trigger( "applicationError", {
+              type: !raccepts.test( videoUri ) ? "Invalid Movie Url" : "No Video Loaded",
+              message: "Please provide a valid movie url. ("+ formatMaps.accepts.join(", ") +") "
+            });
 
-          $doc.trigger( "applicationError", {
-            type: !raccepts.test( videoUri ) ? "Invalid Movie Url" : "No Video Loaded",
-            message: "Please provide a valid movie url. ("+ formatMaps.accepts.join(", ") +") "
-          });
-
-          return;
-        }
-
-        //  TODO: really validate urls
-
-        document.getElementById( "ui-tracklines" ).innerHTML = "";
-        global.$trackLine = new TrackLiner({
-          element: "ui-tracklines",
-          dynamicTrackCreation: true
-        });
-        //  If all passes, continue to load a movie from
-        //  a specified URL.
-        TrackEditor.loadVideoFromUrl(function() {
-          audosaveIndex = 0;
-          if ( autosaveInterval === -1 ) {
-            autosaveInterval = setInterval(controls.autosave, AUTOSAVE_INTERVAL);
+            return;
           }
-        });
-       } catch (err){
+
+          //  TODO: really validate urls
+          
+          //  If all passes, continue to load a movie from
+          //  a specified URL.
+          TrackEditor.loadVideoFromUrl(function() {
+            audosaveIndex = 0;
+            if ( autosaveInterval === -1 ) {
+              autosaveInterval = setInterval(controls.autosave, AUTOSAVE_INTERVAL);
+            }
+          });
+        }
+        catch (err) {
           $doc.trigger( "videoLoadComplete" ); 
 
-         if ( /file/.test( location.protocol ) && ( videoUri.search(/youtube/i) >= 0 || videoUri.search(/vimeo/i) >= 0 || videoUri.search(/soundcloud/i) >= 0 ) ) {
+          if ( /file/.test( location.protocol ) && ( videoUri.search(/youtube/i) >= 0 || videoUri.search(/vimeo/i) >= 0 || videoUri.search(/soundcloud/i) >= 0 ) ) {
 
             $doc.trigger( "applicationError", {
               type: "Video needs to be run from a web server",
               message: "Youtube, Vimeo and SoundCloud support is only available if Butter is being run from a webserver."
             });
 
-         } else {              
-          $doc.trigger( "applicationError", {
-            type: "URL Error",
-            message: "Please check your url"
-          });
-        }   
-      }
+          }
+          else {              
+            $doc.trigger( "applicationError", {
+              type: "URL Error",
+              message: "Please check your url"
+            });
+          }   
+        }
       },
 
       import: function() {
@@ -1997,13 +2055,15 @@
         var $textArea = $("<textarea/>");
 
         function doImport() {
+
           var blob = JSON.parse($textArea.val());
+
           TrackMeta.project.load( blob.data.data, blob );
-          console.log(blob);
           $doc.data( "current", {
             tracks: blob.data.data,
             project: blob
           });
+
         }
 
         var $div = $("#ui-user-input");
@@ -2080,6 +2140,22 @@
 
         slug = _( title ).slug();
 
+        var tracks = {};
+        _.each( tracklinerTracks, function( track, key, i ) {
+          
+          var trackEvents = track.getTrackEvents(),
+              trackIds = []; 
+
+          _.each( trackEvents, function ( trackEvent, trackEventKey, idx ) {
+
+            trackIds.push(trackEvent.pluginOptions.id);
+
+          });
+
+          tracks[track.getElement().id] = trackIds;
+
+        }); //each
+
         store.Title( title );
         store.Description( desc );
         store.Remote( remote );
@@ -2087,22 +2163,29 @@
         store.Layout( layout );
         store.Autosave( autosaveTitle );
         store.Targets( targetDatabase.getObjects() );
+        store.Tracks( tracks );
 
 
         //  Removed the if statement and creation of slug as we will always have a title now
         store.update( slug, $popcorn.data.trackEvents.byStart );
 
+        //targetDatabase.clear();
+        //$trackLiner.clear();
+        //tracklinerTracks = {};
+
         //  Reload/update menu
-        //TrackMeta.menu.load( "#ui-user-videos" );
+        TrackMeta.menu.load( "#ui-user-videos" );
 
 
         if ( !autosaveTitle ) {
-          //  Reload/update project
+          //  Reload/update project -> [secretrobotron: we don't... really need to do this...]
+        /*
           $("#ui-user-videos li[data-slug='"+ slug +"']").trigger( "click", {
 
             special: "Saving your project"
 
           });
+        */
 
           autosaveEnabled = true;
 
@@ -2640,6 +2723,8 @@
           compiled = "",
           stripAttrs = [ "style", "width", "height" ];
 
+
+
       //  Compile scripts
       //  TODO: generate this from loaded plugins
       //  this is really awful
@@ -2674,10 +2759,9 @@
           deserial = JSON.parse( serialized ),
           methods = [], panels = [];
 
-      //console.log(serialized);
-
       //  Build playback JS string
       _.each( deserial.data, function( obj, key ) {
+
         _.each( obj, function( data, dataKey ) {
           var dataObj = _.extend( {}, { id: dataKey }, data ),
               temp = {};
@@ -2686,6 +2770,13 @@
           _.each( dataObj, function( subVal, subKey ) {
             temp[ subKey ] = !isNaN( +subVal ) ? +subVal : subVal;
           });
+
+          if ( temp['target-object'] ) {
+
+            temp.target = temp['target-object'];
+            delete temp['target-object'];
+
+          } //if
 
           methods.push( dataKey + "(" + JSON.stringify( temp ) + ")" );
           panels.push( dataKey );
@@ -2719,10 +2810,10 @@
         $clone.children("#ui-video-controls,hr").remove();
 
         //  Restore controls
-        if ( $clone.children("video").length ) {
+        if ( $clone.find("video").length ) {
 
           var $videoDiv = $("<div/>", { className: "butter-video-player" } ),
-              $videoClone = $clone.children("video").clone();
+              $videoClone = $clone.find("video").clone();
 
           $videoClone.attr("autobuffer", "true");
           $videoClone.attr("preload", "auto");
@@ -2740,10 +2831,10 @@
           compile += '\n    <div class="butter-video">\n      ' + $.trim( $clone.html() ) + '\n    </div>\n  ';
         }
 
+        /*
         if ( $clone.find(".ui-plugin-pane").length ) {
 
           $clone.find(".ui-plugin-pane").each(function () {
-            console.log(2);
 
             var $this = $(this);
 
@@ -2766,6 +2857,42 @@
 
           compile += '\n    <div class="butter-plugins">\n       ' + $clone.html() + '\n    </div>\n';
         }
+        */
+
+        if ( $clone.find("#ui-plugin-container").length ) {
+
+          var divs = {},
+              pluginHTML = '';
+
+          for ( var trackId in tracklinerTracks ) {
+  
+            if ( tracklinerTracks.hasOwnProperty( trackId ) ) {
+  
+              var track = tracklinerTracks[trackId],
+                  events = track.getTrackEvents();
+  
+              for ( var eventName in events ) {
+      
+                var trackEvent = events[ eventName ],
+                    popcornEvent = $popcorn.getTrackEvent( trackEvent.pluginOptions.id ),
+                    target = popcornEvent['target-object'];
+  
+                if ( target && !divs[ target ] ) {
+  
+                  pluginHTML += '\n        <div id="' + target + '"></div>\n';
+                  divs[ target ] = target;
+  
+                } //if
+  
+              } //for
+  
+            } //if
+  
+          } //for
+  
+          compile += '\n    <div class="butter-plugins">\n    ' + pluginHTML + '\n</div>\n';
+  
+        } //if
 
       });
 
@@ -2791,6 +2918,23 @@
         compiled = playbackAry.join('\n');
       }
       else if ( type === "project" ) {
+
+        var tracks = {};
+        _.each( tracklinerTracks, function( track, key, i ) {
+          
+          var trackEvents = track.getTrackEvents(),
+              trackIds = []; 
+
+          _.each( trackEvents, function ( trackEvent, trackEventKey, idx ) {
+
+            trackIds.push(trackEvent.pluginOptions.id);
+
+          });
+
+          tracks[track.getElement().id] = trackIds;
+
+        }); //each
+
         tempStore.Title( $ioVideoTitle.val() );
         tempStore.Description( $ioVideoDesc.val() );
         tempStore.Remote( $ioVideoUrl.val() );
@@ -2798,9 +2942,11 @@
         tempStore.Layout( $layoutlist.attr( "data-layout" ) );
         tempStore.data = deserial;
         tempStore.targets = targetDatabase.getObjects();
+        tempStore.tracks = tracks;
         compiled = JSON.stringify( tempStore );
       }
       else {
+
         //  Only compile fragment
         compiled = exports.scripts + "\n" + exports.theme + "\n" + exports.layout + "\n" + exports.html;
       }
