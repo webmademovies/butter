@@ -2729,7 +2729,7 @@
       //  TODO: generate this from loaded plugins
       //  this is really awful
       _.each( [
-          "js/jquery.js",
+          "http://code.jquery.com/jquery-1.6.1.min.js",
           "http://popcornjs.org/code/dist/popcorn-complete.min.js",
           /*
           "popcorn-js/popcorn.js",
