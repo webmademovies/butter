@@ -7120,7 +7120,7 @@ var onYouTubePlayerReady;
       YOUTUBE_STATE_BUFFERING = 3,
       YOUTUBE_STATE_CUED = 5;
 
-  var urlRegex = /^.*[\/=](.{11})/;
+  var urlRegex = /v\=([^&]+)&?/;
   
   // Collection of all Youtube players
   var registry = {},
@@ -7159,7 +7159,7 @@ var onYouTubePlayerReady;
       return;
     }
     
-    return "http://www.youtube.com/e/" + id;
+    return "http://www.youtube.com/e/watch?v=" + id;
   }
   
   function makeSWF( url, container ) {
