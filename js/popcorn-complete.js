@@ -7249,6 +7249,7 @@ var onYouTubePlayerReady;
     this.loadStarted = false;
     this.loadedData = false;
     this.fullyLoaded = false;
+    this.paused = true;
     
     // If supplied as number, append  'px' on end
     // If suppliied as '###' or '###px', convert to number and append 'px' back on end
@@ -7436,7 +7437,10 @@ var onYouTubePlayerReady;
 
       // Prevent Youtube's behaviour to start playing video after seeking.
       if ( !playing ) {
+        this.video.paused = true;
         this.video.pauseVideo();
+      } else {
+        this.video.paused = false;
       }
 
       // Data need to be loaded again.
