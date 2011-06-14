@@ -2848,7 +2848,7 @@
             .append( $videoClone )
             .append('\n        <p id="videoDescription">' + $ioVideoDesc.val() + '</p>\n      ');
 
-          $clone.children("video").replaceWith( $videoDiv );
+          $clone.find("video").replaceWith( $videoDiv );
 
           compile += '\n    <div class="butter-video">\n      ' + $.trim( $clone.html() ) + '\n    </div>\n  ';
         }
@@ -2899,10 +2899,8 @@
                     popcornEvent = $popcorn.getTrackEvent( trackEvent.pluginOptions.id ),
                     target = popcornEvent['target-object'];
   
-                console.log(target, !divs[ target ]);
                 if ( target && !divs[ target ] ) {
   
-                  console.log('adding', target);
                   pluginHTML += '\n        <div id="' + target + '"></div>\n';
                   divs[ target ] = target;
   
