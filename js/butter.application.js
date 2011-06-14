@@ -2368,7 +2368,7 @@
     $editor.css({display:"none"});
 
 
-    var PLUGIN_BLACKLIST = ['twitter', 'googlefeed', 'attribution', 'facebook', 'linkedin', 'gml', 'flickr', 'googlenews', 'tagthisperson', 'lastfm', 'openmap', 'mustache', 'lowerthird'];
+    var PLUGIN_BLACKLIST = ['code', 'twitter', 'googlefeed', 'attribution', 'facebook', 'linkedin', 'gml', 'flickr', 'googlenews', 'tagthisperson', 'lastfm', 'openmap', 'mustache', 'lowerthird'];
     var PLUGIN_DEFAULTS = {
 
       wikipedia: {
@@ -2383,6 +2383,9 @@
         onEnd: function() {},
         onFrame: function() {}
       
+      },
+      googlemap: {
+        zoom: 8
       }
 
     };
