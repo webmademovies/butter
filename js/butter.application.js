@@ -1257,7 +1257,6 @@
 
                     var trackMap = trackEventMap[ trackName ];
                     if ( trackMap.indexOf( options.id ) > -1 ) {
-                      console.log( trackMap, trackName, options.id, !!tracklinerTracks[ trackName ] );
                       track = tracklinerTracks[ trackName ] || $trackLiner.createTrack();
                       break;
                     } //if
