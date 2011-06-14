@@ -635,7 +635,7 @@
           enforceTarget( ui.draggable[ 0 ].id );
 
           var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
-              end = start + 2,
+              end = start + 4,
               // force div to display on a fourth of a second
               width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
               left = start / $popcorn.duration() * track.getElement().offsetWidth;
@@ -1564,7 +1564,7 @@
             // this line can be removed if the length of the canvas dictates the length of the container
             trackLineDiv.style.width = $tracktimecanvas.width() + "px";
 
-            $ioVideoTitle.val("");
+            //$ioVideoTitle.val("");
             $ioVideoDesc.val("");
 
             //  Empty active track cache
@@ -2328,7 +2328,7 @@
       modal: true,
       autoOpen: true,
       width: 400,
-      height: 435,
+      height: 515,
       open: function() {
 
         var $this = $(this),
@@ -2358,7 +2358,9 @@
       buttons: {
         "Start": function() {
           var $this = $(this),
-              value = $this.children( "input" ).val();
+              value = $this.children( "#project-url" ).val(),
+              projectName = $this.children( "#project-name" ).val();
+
           var webServer = document.createElement( "div" );
           
           if ( /file/.test( location.protocol ) && ( value.search(/youtube/i) >= 0 || value.search(/vimeo/i) >= 0 || value.search(/soundcloud/i) >= 0 ) ) {
@@ -2373,6 +2375,7 @@
             
             try {
               $ioVideoUrl.val( value );
+              $ioVideoTitle.val(projectName);
               controls[ "load" ]();
               $this.dialog( "close" );
             } catch (err){
@@ -2484,6 +2487,7 @@
             oldProjectDetails = $ioVideoDesc.val();
             oldTitle = $ioVideoTitle.val();
             oldUrl = $ioVideoUrl.val();
+            
           },
 
           buttons: {
