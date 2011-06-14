@@ -1633,7 +1633,7 @@
 
               });
 
-              if ( $popcorn.video.currentTime > 0 ) {
+              if ( $popcorn.video.currentTime >= 0 ) {
 
                 //  Update the scrubber handle position
                 var quarterTime = _( $popcorn.video.currentTime ).fourth(),
@@ -1773,7 +1773,7 @@
         },
 
         moveScrubberToPosition: function( moveTo ) {
-
+          
           //console.log( moveTo, $popcorn.video.currentTime );
 
           if ( moveTo === $("#ui-tracks-time").position().left ) {
