@@ -635,7 +635,7 @@
           enforceTarget( ui.draggable[ 0 ].id );
 
           var start = _( options.left / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth(),
-              end = start + 2,
+              end = start + 4,
               // force div to display on a fourth of a second
               width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
               left = start / $popcorn.duration() * track.getElement().offsetWidth;
