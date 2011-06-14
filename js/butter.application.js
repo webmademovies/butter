@@ -710,6 +710,7 @@
         }
 
         rebuiltEvent.target = trackType + "-container";
+        rebuiltEvent['target-object'] = popcornTrack['target-object'];
 
         // modify start and end based on div's new position
         rebuiltEvent.start = _( trackEventObj.element.offsetLeft / document.getElementById( "ui-tracklines" ).offsetWidth * $popcorn.duration() ).fourth();
@@ -800,12 +801,19 @@
           $popcorn[ trackType ]( rebuiltEvent );
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
 
-          if ( $targetSelectElem.val() !== "[no target]" ) {
-
-            outsidePopcornTrack['target-object'] = $targetSelectElem.val();
-          } else {
+          var targetVal = $targetSelectElem.val();
+          if ( targetVal === "[no target]" ) {
 
             outsidePopcornTrack['target-object'] = undefined;
+
+          } else if ( targetVal === "[standard target]" ) {
+
+            outsidePopcornTrack['target-object'] = trackType + "-container";
+
+          } else {
+
+            outsidePopcornTrack['target-object'] = $targetSelectElem.val();
+
           }
 
           removedTrack.pluginOptions.id = outsidePopcornTrack._id;
@@ -914,11 +922,19 @@
         } //for
 
         label = $( "<label/>" ).attr( "for", "target" ).text( "Target" );
-        var $option = $( "<option/>", {
-            value: undefined,
-            text: "[no target]",
-          });
-        $option.appendTo( $targetSelectElem );
+        $( "<option/>", {
+          value: undefined,
+          text: "[no target]",
+        })
+        .appendTo( $targetSelectElem );
+
+        $( "<option/>", {
+          value: "[standard target]",
+          text: "[standard target]",
+          selected: outsidePopcornTrack['target-object'] === outsidePopcornTrack._natives.type + "-container",
+        })
+        .appendTo( $targetSelectElem );
+
         _.each( targetDatabase.getObjects(), function( target, id ) {
 
           var $option = $( "<option/>", {
@@ -2897,8 +2913,10 @@
                     popcornEvent = $popcorn.getTrackEvent( trackEvent.pluginOptions.id ),
                     target = popcornEvent['target-object'];
   
+                console.log(target, !divs[ target ]);
                 if ( target && !divs[ target ] ) {
   
+                  console.log('adding', target);
                   pluginHTML += '\n        <div id="' + target + '"></div>\n';
                   divs[ target ] = target;
   
