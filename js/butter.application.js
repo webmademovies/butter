@@ -2314,7 +2314,7 @@
 
               $ioVideoUrl.val( value );
 
-              $('[data-control="load"]').trigger( "click" );
+              controls[ "load" ]();
 
             }
 
@@ -2339,10 +2339,11 @@
 
            } else {
 
-            $this.dialog( "close" );
+            
             try {
               $ioVideoUrl.val( value );
-              $('[data-control="load"]').trigger( "click" );
+              controls[ "load" ]();
+              $this.dialog( "close" );
             } catch (err){
               $doc.trigger( "videoReady" );
               $doc.trigger( "videoLoadComplete" ); 
@@ -3331,7 +3332,7 @@
 
       //  Enter
       //if ( event.which === 13 ) {
-        //controls.seek( "seek:io-current-time" );
+        //controls.seek( "seek:io-current-t$this.dialog( "close" );ime" );
       //}
 
       //  Arrow right
@@ -3345,7 +3346,16 @@
       }
 
     });
-
+    
+    $("#prjBtn").bind( "click", function( event ) {
+      
+      var open = $uiStartScreen.dialog( "isOpen" );
+      $uiStartScreen.dialog( "close" );
+      
+      if( !open ) {
+        $uiStartScreen.dialog( "open" );
+      }
+    });
 
     global.$popcorn = $popcorn;
   });
