@@ -84,7 +84,6 @@
   
     <div id="ui-panel-preview" class="span-17 last" data-export="true">
       <div id="ui-trackTitle-div"></div>
-			<ul id="ui-panel-preview-sortable" class="sortable">
 
 			</ul>
       <div id="ui-plugin-container"></div>
@@ -102,7 +101,7 @@
     </div>
     <div id="preview-pane" style="height: 395px" >
       
-      <div id="ui-track-div">
+      <div id="ui-track-div" style="z-index: -1;">
        <!-- reusable -->
       </div>
       <div id="ui-track-event-editor" title="Edit Track Event">
@@ -202,15 +201,6 @@
       <ul id="ui-user-videos" class="select-ul is-menu">
       </ul>
 
-      <button class="ui-menuset">Layout</button> 
-      <!-- start out with a default layout in data-layout -->
-      <ul id="ui-layout" class="select-ul is-menu"  data-layout="wide">
-      </ul>
-
-      <button class="ui-menuset">Theme</button> 
-      <!-- start out with a default theme in data-theme -->
-      <ul id="ui-theme" class="select-ul is-menu" data-theme="clean">
-      </ul>
 
       <button class="ui-menuset">Import Project</button> 
       <ul id="ui-import-to" class="select-ul is-menu">
