@@ -4835,8 +4835,8 @@ var wikiCallback;
     _teardown: function( options ){
 
       if ( options._added ) {
-        document.getElementById( options.target ).removeChild( options._link );
-        document.getElementById( options.target ).removeChild( options._desc );
+        options._link.parentNode && document.getElementById( options.target ).removeChild( options._link );
+        options._desc.parentNode && document.getElementById( options.target ).removeChild( options._desc );
       }
     }
   });
