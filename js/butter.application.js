@@ -596,17 +596,15 @@
 
     function showEventPreview ( trackEvent ) {
 
-      $("#" + trackEvent.target).show();
       $("#ui-trackTitle-div").html("<h2>" + trackEvent.target + "</h2>");
-      $("#ui-track-div").append($("#" + trackEvent.target));
 
-      $("#ui-track-div").children().each( function() {
+      $(".ui-plugin-pane").each( function() {
 
         if( this.id !== trackEvent.target ) {
-          $( "#" + this.id ).hide();
+          $( document.getElementById( this.id ).parentNode ).hide();
         }
         else {
-          $( "#" + this.id ).show();
+          $( document.getElementById( this.id ).parentNode ).show();
         } //if
 
       });
@@ -618,8 +616,8 @@
 
       if ( !$("#" + plugin + "-container").length ) {
 
-        $("#ui-panel-preview .sortable").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container'></div></li>");
-        $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane");//.parent().resizable();
+        $("#ui-panel-preview").append("<li><div data-plugin="+ plugin +" id='"+ plugin +"-container' style='height: 255px;'></div></li>");
+        $("#"+ plugin +"-container").addClass("ui-widget-content ui-plugin-pane").parent().resizable();
       }
     };
 
@@ -783,13 +781,13 @@
             }
           }
 
-          if ( $targetSelectElem.val() !== "[no target]" ) {
+          //if ( $targetSelectElem.val() !== "[no target]" ) {
 
             rebuiltEvent.target = trackType + "-container";
-          } else {
+          //} else {
 
-            rebuiltEvent.target = undefined;
-          }
+          //  rebuiltEvent.target = undefined;
+          //}
 
           $popcorn[ trackType ]( rebuiltEvent );
           outsidePopcornTrack = $popcorn.getTrackEvent( $popcorn.getLastTrackEventId() );
@@ -2020,7 +2018,12 @@
           }
 
           //  TODO: really validate urls
-          
+
+          document.getElementById( "ui-tracklines" ).innerHTML = "";
+          $trackLine = new TrackLiner({
+            element: "ui-tracklines",
+            dynamicTrackCreation: true
+          });
           //  If all passes, continue to load a movie from
           //  a specified URL.
           TrackEditor.loadVideoFromUrl(function() {
@@ -2031,6 +2034,7 @@
           });
         }
         catch (err) {
+
           $doc.trigger( "videoLoadComplete" ); 
 
           if ( /file/.test( location.protocol ) && ( videoUri.search(/youtube/i) >= 0 || videoUri.search(/vimeo/i) >= 0 || videoUri.search(/soundcloud/i) >= 0 ) ) {
@@ -2373,9 +2377,11 @@
         lang: 'en',
 
       },
-      subtitle: {
+      code: {
 
-        target: undefined
+        onStart: function() {},
+        onEnd: function() {},
+        onFrame: function() {}
       
       }
 
