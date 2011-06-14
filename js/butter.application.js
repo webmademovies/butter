@@ -3349,10 +3349,7 @@
     
     $("#prjBtn").bind( "click", function( event ) {
       
-      var open = $uiStartScreen.dialog( "isOpen" );
-      $uiStartScreen.dialog( "close" );
-      
-      if( !open ) {
+      if( !$uiStartScreen.dialog( "isOpen" ) ) {
         $uiStartScreen.dialog( "open" );
       }
     });
