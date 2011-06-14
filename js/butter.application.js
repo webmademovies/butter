@@ -665,7 +665,9 @@
           var popcornTrack = $popcorn.getTrackEvent( options.id ) || $popcorn[ ui.draggable[ 0 ].id ]( popcornDefaults ).getTrackEvent( $popcorn.getLastTrackEventId() );
 
           showEventPreview( popcornTrack );
-          $popcorn.media.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );
+        $popcorn.video.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );
 
           return { left: left, innerHTML: ui.draggable[ 0 ].id, width: width, id: popcornTrack._id };
         } else {
@@ -680,7 +682,9 @@
               popcornTrack = $popcorn[ options.type ](options).getTrackEvent( $popcorn.getLastTrackEventId() );
 
           showEventPreview( popcornTrack );
-          $popcorn.media.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );
+        $popcorn.video.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );
 
           return { left: left, innerHTML: options.type, width: width, id: popcornTrack._id };
         }
@@ -731,7 +735,11 @@
         }
 
         trackEventObj.pluginOptions.id = popcornTrack._id;
-        $popcorn.media.currentTime += 0.0001;
+
+        $popcorn.trigger( "timeupdate" );
+        $popcorn.video.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );
+
       },
       // called when a track event is clicked
       click: function ( track, trackEventObj, event, ui ) {
@@ -805,8 +813,11 @@
 
           removedTrack.element.style.left = outsidePopcornTrack.start / $popcorn.duration() * track.getElement().offsetWidth + "px";
           removedTrack.element.style.width = ( outsidePopcornTrack.end - outsidePopcornTrack.start ) / $popcorn.duration() * track.getElement().offsetWidth + "px";
-
-          $popcorn.media.currentTime += 0.0001;
+          
+        $popcorn.trigger( "timeupdate" );
+        $popcorn.video.currentTime += 0.0001;
+        $popcorn.trigger( "timeupdate" );     
+          
         };
 
         // create the form field dialog for track editing
@@ -1632,7 +1643,7 @@
 
               });
 
-              if ( $popcorn.video.currentTime > 0 ) {
+              if ( $popcorn.video.currentTime >= 0 ) {
 
                 //  Update the scrubber handle position
                 var quarterTime = _( $popcorn.video.currentTime ).fourth(),
@@ -1772,7 +1783,7 @@
         },
 
         moveScrubberToPosition: function( moveTo ) {
-
+          
           //console.log( moveTo, $popcorn.video.currentTime );
 
           if ( moveTo === $("#ui-tracks-time").position().left ) {
@@ -2317,7 +2328,7 @@
 
               $ioVideoUrl.val( value );
 
-              $('[data-control="load"]').trigger( "click" );
+              controls[ "load" ]();
 
             }
 
@@ -2342,10 +2353,11 @@
 
            } else {
 
-            $this.dialog( "close" );
+            
             try {
               $ioVideoUrl.val( value );
-              $('[data-control="load"]').trigger( "click" );
+              controls[ "load" ]();
+              $this.dialog( "close" );
             } catch (err){
               $doc.trigger( "videoReady" );
               $doc.trigger( "videoLoadComplete" ); 
@@ -3339,7 +3351,7 @@
 
       //  Enter
       //if ( event.which === 13 ) {
-        //controls.seek( "seek:io-current-time" );
+        //controls.seek( "seek:io-current-t$this.dialog( "close" );ime" );
       //}
 
       //  Arrow right
@@ -3353,7 +3365,13 @@
       }
 
     });
-
+    
+    $("#prjBtn").bind( "click", function( event ) {
+      
+      if( !$uiStartScreen.dialog( "isOpen" ) ) {
+        $uiStartScreen.dialog( "open" );
+      }
+    });
 
     global.$popcorn = $popcorn;
   });
