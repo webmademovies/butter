@@ -582,13 +582,14 @@
 
         tracklinerTracks = {};
 
-    global.$trackLiner = $trackLiner;
+    //$trackLiner = $trackLiner;
 
     var addTrackEvent = function( options, track ) {
 
       // use options.type, but support older options.id
       options.type = options.type || options.id;
       delete options.id;
+
       var track = track || $trackLiner.getTrack( "trackLiner0" ) || $trackLiner.createTrack();
 
       track.createTrackEvent( "butterapp", options );
@@ -2046,7 +2047,7 @@
           //  TODO: really validate urls
 
           document.getElementById( "ui-tracklines" ).innerHTML = "";
-          $trackLine = new TrackLiner({
+          $trackLiner = new TrackLiner({
             element: "ui-tracklines",
             dynamicTrackCreation: true
           });
