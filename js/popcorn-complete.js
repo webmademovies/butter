@@ -4134,7 +4134,7 @@ var googleCallback;
             options.accessibility = accessibility;
 
             options.toggleSubtitles = function() {
-              options.selectedLanguage = options.languageSrc.options[ options.languageSrc.selectedIndex ].value;
+              options.selectedLanguage = options.languageSrc && options.languageSrc.options[ options.languageSrc.selectedIndex ].value;
               if ( options.accessibility.checked || options.selectedLanguage !== ( options.language || "") ) {
                 options.display = "inline";
                 options.container.style.display = options.display;
