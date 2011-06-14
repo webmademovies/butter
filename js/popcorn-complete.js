@@ -4831,6 +4831,13 @@ var wikiCallback;
         document.getElementById( options.target ).removeChild( options._link );
         document.getElementById( options.target ).removeChild( options._desc );
       }
+    },
+    _teardown: function( options ){
+
+      if ( options._added ) {
+        document.getElementById( options.target ).removeChild( options._link );
+        document.getElementById( options.target ).removeChild( options._desc );
+      }
     }
   });
 
