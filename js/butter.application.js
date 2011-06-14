@@ -1239,7 +1239,7 @@
                 autosaveInterval = setInterval(controls.autosave, AUTOSAVE_INTERVAL);
               }
 
-              if ( project.autosave ) {
+              /*if ( project.autosave ) {
                 autosaveEnabled = false;
                 $("#ui-application-error").html("<div><b>Warning:</b> Since you have opened an Autosave project, the Autosave feature is disabled until you save this project manually.</div>");
                 $uiApplicationMsg.dialog({
@@ -1248,12 +1248,12 @@
                     $uiApplicationMsg.dialog( "close" );
                   }}
                 });
-              }
+              }*/
 
               TrackMeta.project.loadWorkspace( tracks, trackEventMap );
 
               //  Load meta data
-              $ioVideoTitle.val( project.title );
+              $ioVideoTitle.val( project.title.split( "-Autosave" )[ 0 ] );
               $ioVideoDesc.val( project.description );
 
             });
