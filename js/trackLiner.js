@@ -195,10 +195,11 @@
           options.opacity && (element.style.opacity = options.opacity);
           options.height && (element.style.height = options.height);
           options.width && (element.style.width = options.width*scale + "px");
-          options.position && (element.style.position = options.position);
           options.top && (element.style.top = options.top);
           options.left && (element.style.left = options.left*scale + "px");
           options.innerHTML && (element.innerHTML = options.innerHTML);
+
+          element.style.position = options.position ? options.position : 'absolute';
 
           // add css options if they exist
           if ( options.css ) {
