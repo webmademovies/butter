@@ -587,7 +587,7 @@
     var addTrackEvent = function( options, track ) {
 
       // use options.type, but support older options.id
-      options.type = options.type || options.id;
+      options._type = options._type || options.id;
       delete options.id;
 
       var track = track || $trackLiner.getTrack( "trackLiner0" ) || $trackLiner.createTrack();
@@ -673,21 +673,21 @@
           return { left: left, innerHTML: ui.draggable[ 0 ].id, width: width, id: popcornTrack._id };
         } else {
 
-          enforceTarget( options.type );
+          enforceTarget( options._type );
 
           var start = options.start,
               end = options.end,
               // force div to display on a fourth of a second
               width = ( end - start ) / $popcorn.duration() * track.getElement().offsetWidth,
               left = start / $popcorn.duration() * track.getElement().offsetWidth,
-              popcornTrack = $popcorn[ options.type ](options).getTrackEvent( $popcorn.getLastTrackEventId() );
+              popcornTrack = $popcorn[ options._type ](options).getTrackEvent( $popcorn.getLastTrackEventId() );
 
           showEventPreview( popcornTrack );
         $popcorn.trigger( "timeupdate" );
         $popcorn.video.currentTime += 0.0001;
         $popcorn.trigger( "timeupdate" );
 
-          return { left: left, innerHTML: options.type, width: width, id: popcornTrack._id };
+          return { left: left, innerHTML: options._type, width: width, id: popcornTrack._id };
         }
       },
       // called when an existing track is moved
@@ -1265,7 +1265,7 @@
 
               _.each( trackDataObj, function( data, key ) {
 
-                var options = _.extend( {}, { type: key }, data );
+                var options = _.extend( {}, { _type: key }, data );
 
                 var track;
                 if ( trackEventMap && options.id ) {
