@@ -2696,7 +2696,7 @@
                       start: data[ i ].start_time,
                       end: data[ i ].end_time,
                       text: data[ i ].text,
-                      type: "subtitle"
+                      _type: "subtitle"
                     });
                   }
 
